@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.cookmate: DEBUG
+    org.springframework.data.mongodb: DEBUG

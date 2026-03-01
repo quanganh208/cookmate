@@ -1,0 +1,10 @@
+logging:
+  level:
+    com.cookmate: INFO
+    root: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
