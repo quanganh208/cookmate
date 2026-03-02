@@ -6,10 +6,10 @@ Your recipe sharing companion — discover, create, and share recipes with a vib
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Mobile | React Native Expo (Expo Router) | SDK 52 |
-| Backend | Spring Boot | 3.4.3 |
+| Mobile | React Native Expo (Expo Router) | SDK 55 |
+| Backend | Spring Boot | 3.5.11 |
 | Language (BE) | Java | 21 LTS |
-| Database | MongoDB | 7.0 |
+| Database | MongoDB | 8.0 |
 | Build (FE) | pnpm workspaces | 10.x |
 | Build (BE) | Maven (wrapper) | 3.9.x |
 | Container | Docker Compose | Latest |
