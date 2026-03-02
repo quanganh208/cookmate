@@ -3,9 +3,9 @@
 ## Overview
 
 Cookmate uses a monorepo with two main applications:
-- **Mobile**: React Native Expo (SDK 52) with Expo Router file-based routing
-- **Backend**: Spring Boot 3.4.3 REST API (Java 21) with Spring Data MongoDB
-- **Database**: MongoDB 7.0 (containerized)
+- **Mobile**: React Native Expo (SDK 55) with Expo Router file-based routing
+- **Backend**: Spring Boot 3.5.11 REST API (Java 21) with Spring Data MongoDB
+- **Database**: MongoDB 8.0 (containerized)
 
 ## Architecture Diagram
 
@@ -84,7 +84,7 @@ Controller → Service → Repository → MongoDB
 
 | Service | Image | Port | Purpose |
 |---------|-------|------|---------|
-| mongodb | mongo:7.0 | 27017 | Database (healthcheck enabled) |
+| mongodb | mongo:8.0 | 27017 | Database (healthcheck enabled) |
 | api-server | custom (Dockerfile.backend) | 8080 | Spring Boot API server |
 
 ## Local Development Environment

@@ -31,7 +31,7 @@
 - Use named exports for components
 - Expo Router for navigation (no React Navigation setup yet)
 
-## Java / Spring Boot (3.4.3, Java 21)
+## Java / Spring Boot (3.5.11, Java 21)
 
 ### Naming
 - **Files/Classes:** PascalCase (`RecipeService.java`)
@@ -74,7 +74,7 @@ com.cookmate/
 
 ## Development Environment
 
-- **Local Database:** Docker Compose (MongoDB 7.0)
+- **Local Database:** Docker Compose (MongoDB 8.0)
 - **API Server:** Spring Boot dev profile (hot reload via devtools)
 - **Mobile:** Expo start (fast refresh enabled)
 - **Network:** All containers on `cookmate-network` bridge
