@@ -16,7 +16,7 @@
 - **Constants:** UPPER_SNAKE_CASE (`API_BASE_URL`)
 - **Types/Interfaces:** PascalCase (`Recipe`, `UserProfile`)
 
-### Structure (Expo SDK 52 + Expo Router 4.0)
+### Structure (Expo SDK 55 + Expo Router v7)
 - **Pages** in `app/` — Expo Router file-based routing
 - **Components** in `components/` — Reusable UI components
 - **Hooks** in `hooks/` — Custom React hooks
@@ -81,7 +81,10 @@ com.cookmate/
 
 ## Git
 
-
+### Workflow
+- Always pull latest `main` before creating a feature branch
+- Keep branches short-lived; merge via PR after CI passes
+- Delete merged branches
 
 ### Branches
 - `main` — production-ready code
@@ -93,7 +96,7 @@ Follow Conventional Commits:
 ```
 feat(recipes): add search by ingredient
 fix(auth): resolve token refresh race condition
-chore(deps): update Spring Boot to 3.4.4
+chore(deps): update Spring Boot to 3.5.11
 ```
 
 ## API Design

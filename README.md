@@ -1,6 +1,22 @@
-# Cookmate
+<h1 align="center">Cookmate</h1>
+<p align="center">Your recipe sharing companion — discover, create, and share recipes with a vibrant community.</p>
+<p align="center">
+  <a href="https://github.com/cookmate/cookmate/actions/workflows/frontend-ci.yml"><img alt="Frontend CI" src="https://github.com/cookmate/cookmate/actions/workflows/frontend-ci.yml/badge.svg"></a>
+  <a href="https://github.com/cookmate/cookmate/actions/workflows/backend-ci.yml"><img alt="Backend CI" src="https://github.com/cookmate/cookmate/actions/workflows/backend-ci.yml/badge.svg"></a>
+  <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue">
+  <img alt="Expo SDK 55" src="https://img.shields.io/badge/Expo-SDK%2055-black">
+  <img alt="Spring Boot 3.5" src="https://img.shields.io/badge/Spring%20Boot-3.5-green">
+  <img alt="MongoDB 8.0" src="https://img.shields.io/badge/MongoDB-8.0-00c917">
+</p>
 
-Your recipe sharing companion — discover, create, and share recipes with a vibrant community.
+## Features
+
+- Discover recipes shared by the community
+- Create and publish your own recipes
+- Search and filter recipes by cuisine, ingredients, difficulty
+- Save favorite recipes for quick access
+- View detailed nutritional information
+- Connect with other food enthusiasts
 
 ## Tech Stack
 
@@ -11,32 +27,31 @@ Your recipe sharing companion — discover, create, and share recipes with a vib
 | Language (BE) | Java | 21 LTS |
 | Database | MongoDB | 8.0 |
 | Build (FE) | pnpm workspaces | 10.x |
-| Build (BE) | Maven (wrapper) | 3.9.x |
-| Container | Docker Compose | Latest |
+| Build (BE) | Maven wrapper | 3.9.x |
 
 ## Prerequisites
 
-- **Node.js** 20+ — [nodejs.org](https://nodejs.org)
+- **Node.js** 22+ — [nodejs.org](https://nodejs.org)
 - **pnpm** 10+ — `npm install -g pnpm`
-- **Java** 21+ — [Adoptium Temurin](https://adoptium.net)
-- **Docker** — [docker.com](https://www.docker.com) (for MongoDB)
+- **Java** 21 LTS — [Adoptium Temurin](https://adoptium.net)
+- **Docker** — [docker.com](https://www.docker.com)
 
-## Getting Started
+## Quick Start
 
 ```bash
-# Clone the repo
+# Clone the repository
 git clone <repo-url> cookmate && cd cookmate
 
-# Install frontend dependencies
+# Install dependencies
 pnpm install
 
 # Start MongoDB
 docker compose up -d
 
-# Start backend (new terminal)
+# Start backend (in a new terminal)
 cd backend && ./mvnw spring-boot:run
 
-# Start mobile app (new terminal)
+# Start mobile app (in another terminal)
 cd .. && pnpm mobile
 ```
 
@@ -47,93 +62,52 @@ cookmate/
 ├── apps/
 │   └── mobile/              # React Native Expo app
 │       ├── app/             # Expo Router pages
-│       │   ├── _layout.tsx  # Root layout
-│       │   ├── index.tsx    # Home screen
-│       │   └── +not-found.tsx
-│       ├── app.json         # Expo config
+│       ├── app.json         # Expo configuration
 │       └── package.json
 ├── backend/                 # Spring Boot API
 │   ├── src/main/java/com/cookmate/
-│   │   ├── CookmateApplication.java
-│   │   ├── controller/      # REST controllers
+│   │   ├── controller/      # REST endpoints
 │   │   ├── service/         # Business logic
-│   │   ├── repository/      # MongoDB repositories
+│   │   ├── repository/      # MongoDB access
 │   │   ├── model/           # Domain entities
 │   │   ├── dto/             # Data transfer objects
 │   │   ├── config/          # Configuration
-│   │   └── exception/       # Custom exceptions
-│   ├── src/main/resources/  # application.yml configs
+│   │   └── exception/       # Error handling
 │   └── pom.xml
-├── docker/                  # Docker configs
-│   ├── Dockerfile.backend   # Multi-stage Java build
-│   └── mongo-init.js        # MongoDB seed script
-├── .github/workflows/       # CI/CD
-│   ├── backend-ci.yml       # Java build + test
-│   └── frontend-ci.yml      # Lint + typecheck
-├── docker-compose.yml       # Local dev services
-├── package.json             # Root workspace config
-└── pnpm-workspace.yaml      # Workspace declaration
+├── docker/                  # Docker configurations
+├── .github/workflows/       # CI/CD pipelines
+├── docker-compose.yml
+├── package.json
+└── pnpm-workspace.yaml
 ```
 
-## Development
+## Scripts Reference
 
-### Mobile App
+| Command | Description |
+|---------|-------------|
+| `pnpm mobile` | Start Expo development server |
+| `pnpm mobile:ios` | Run on iOS simulator |
+| `pnpm mobile:android` | Run on Android emulator |
+| `pnpm lint` | Run ESLint |
+| `pnpm format` | Format code with Prettier |
+| `pnpm format:check` | Check formatting |
+| `pnpm docker:up` | Start Docker services |
+| `pnpm docker:down` | Stop Docker services |
+| `pnpm docker:logs` | View Docker logs |
+| `cd backend && ./mvnw spring-boot:run` | Start backend server |
+| `cd backend && ./mvnw clean verify` | Run backend tests |
 
-```bash
-pnpm mobile          # Start Expo dev server
-pnpm mobile:ios      # Start on iOS simulator
-pnpm mobile:android  # Start on Android emulator
-```
+## Environment Variables
 
-### Backend
-
-```bash
-cd backend
-./mvnw spring-boot:run                    # Start server (port 8080)
-./mvnw clean verify                       # Run tests
-./mvnw spring-boot:run -Dspring.profiles.active=dev  # Dev profile
-```
-
-### API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/actuator/health` | Spring Actuator health |
-
-### Docker
-
-```bash
-docker compose up -d      # Start MongoDB
-docker compose down       # Stop services
-docker compose logs -f    # Tail logs
-```
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/cookmate` |
+| `SPRING_PROFILES_ACTIVE` | Active Spring profile | `dev` |
 
 ## Contributing
 
-### Branch Naming
-
-- `feat/description` — new features
-- `fix/description` — bug fixes
-- `chore/description` — maintenance tasks
-
-### Commit Convention
-
-Follow [Conventional Commits](https://www.conventionalcommits.org):
-
-```
-feat: add recipe search endpoint
-fix: resolve MongoDB connection timeout
-chore: update Spring Boot to 3.4.4
-```
-
-### Pull Request Process
-
-1. Create a feature branch from `main`
-2. Make changes and ensure CI passes
-3. Open a PR with clear description
-4. Request review from a team member
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for branch naming, commit conventions, and pull request guidelines.
 
 ## License
 
-MIT
+[MIT](./LICENSE)

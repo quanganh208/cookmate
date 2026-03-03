@@ -21,7 +21,7 @@ Cookmate uses a monorepo with two main applications:
                                                      │
                                             ┌────────▼─────────┐
                                             │                  │
-                                            │    MongoDB 7.0   │
+                                            │    MongoDB 8.0   │
                                             │                  │
                                             └──────────────────┘
 ```
