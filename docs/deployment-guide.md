@@ -116,7 +116,7 @@ docker run -e SPRING_PROFILES_ACTIVE=prod cookmate-api
 
 **Required for production:**
 ```bash
-MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/cookmate
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/cookmate
 SPRING_PROFILES_ACTIVE=prod
 SERVER_PORT=8080
 LOG_LEVEL=WARN
