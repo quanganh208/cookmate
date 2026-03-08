@@ -12,6 +12,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Phase 4: Advanced social features (followers, ratings)
 - Phase 5: AI-powered recipe suggestions
 
+## [0.1.1] — 2026-03-06
+
+### Added (CI Integration)
+- **Frontend CI Enhancements:**
+  - Jest testing framework with jest-expo preset for React Native testing
+  - Sample test suite in `apps/mobile/__tests__/` with basic sanity checks
+  - `npx expo export --platform web` build verification step
+  - Added test and build jobs to `frontend-ci.yml` workflow
+  - pnpm store caching via `actions/setup-node` (cache: 'pnpm')
+- **Backend CI Enhancements:**
+  - Maven Checkstyle plugin integration with Google Java style configuration
+  - `backend/checkstyle.xml` with relaxed rules (failOnViolation=false)
+  - Docker Buildx setup for containerized builds in CI
+  - Docker layer caching via GitHub Actions cache backend
+  - Added Docker build job to `backend-ci.yml` workflow
+  - Maven dependency caching (already configured via setup-java)
+- **CI/CD Improvements:**
+  - Reordered frontend CI: pnpm setup before Node setup for proper cache detection
+  - Updated workflow dependencies: Phase 1 & 2 run in parallel, Phase 3 runs after
+  - All 3 cache strategies integrated: pnpm, Docker, Maven
+
+### Changed
+- `.github/workflows/frontend-ci.yml` — Restructured with test + build + cache
+- `.github/workflows/backend-ci.yml` — Added Checkstyle + Docker + cache
+- `apps/mobile/package.json` — Added Jest deps + test script
+- `backend/pom.xml` — Added maven-checkstyle-plugin
+
+### Created
+- `apps/mobile/jest.config.ts` — Jest configuration
+- `apps/mobile/__tests__/app.test.tsx` — Sample test
+- `backend/checkstyle.xml` — Checkstyle rules
+
 ## [0.1.0] — 2026-03-06
 
 ### Added
@@ -35,9 +67,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Spring Boot API service with dev profile
   - Custom `cookmate-network` bridge for inter-container communication
   - Service dependency management
-- **CI/CD:** GitHub Actions workflows
+- **CI/CD:** GitHub Actions workflows (See v0.1.1 for full testing and caching setup)
   - `frontend-ci.yml` — ESLint, TypeScript, build verification
-  - `backend-ci.yml` — Maven build, Checkstyle, unit tests
+  - `backend-ci.yml` — Maven build, unit tests
   - Automated on PR and push to main
 - **Code Standards:**
   - ESLint 9.x and Prettier for code formatting
@@ -102,6 +134,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 | Version | Release Date | Phase | Highlights |
 |---------|--------------|-------|------------|
 | 0.1.0 | 2026-03-06 | Foundation | Monorepo, mobile + backend scaffolds, Docker dev env |
+| 0.1.1 | 2026-03-06 | CI Integration | Jest tests, Checkstyle, Docker build, multi-stage caching |
 | 0.2.0 | TBD | Auth | User registration, JWT, profile management |
 | 0.3.0 | TBD | Recipes | Recipe CRUD, search, ingredients, images |
 | 1.0.0 | TBD | Release | Full feature set, production ready |
