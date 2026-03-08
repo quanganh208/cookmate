@@ -1,8 +1,8 @@
 <h1 align="center">Cookmate</h1>
 <p align="center">Your recipe sharing companion — discover, create, and share recipes with a vibrant community.</p>
 <p align="center">
-  <a href="https://github.com/cookmate/cookmate/actions/workflows/frontend-ci.yml"><img alt="Frontend CI" src="https://github.com/cookmate/cookmate/actions/workflows/frontend-ci.yml/badge.svg"></a>
-  <a href="https://github.com/cookmate/cookmate/actions/workflows/backend-ci.yml"><img alt="Backend CI" src="https://github.com/cookmate/cookmate/actions/workflows/backend-ci.yml/badge.svg"></a>
+  <a href="https://github.com/quanganh208/cookmate/actions/workflows/frontend-ci.yml"><img alt="Frontend CI" src="https://github.com/quanganh208/cookmate/actions/workflows/frontend-ci.yml/badge.svg"></a>
+  <a href="https://github.com/quanganh208/cookmate/actions/workflows/backend-ci.yml"><img alt="Backend CI" src="https://github.com/quanganh208/cookmate/actions/workflows/backend-ci.yml/badge.svg"></a>
   <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue">
   <img alt="Expo SDK 55" src="https://img.shields.io/badge/Expo-SDK%2055-black">
   <img alt="Spring Boot 3.5" src="https://img.shields.io/badge/Spring%20Boot-3.5-green">
