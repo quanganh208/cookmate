@@ -45,14 +45,8 @@ git clone <repo-url> cookmate && cd cookmate
 # Install dependencies
 pnpm install
 
-# Start MongoDB
-docker compose up -d
-
-# Start backend (in a new terminal)
-cd backend && ./mvnw spring-boot:run
-
-# Start mobile app (in another terminal)
-cd .. && pnpm mobile
+# Start everything (Docker + backend + mobile)
+pnpm dev
 ```
 
 ## Project Structure
@@ -85,6 +79,9 @@ cookmate/
 
 | Command | Description |
 |---------|-------------|
+| `pnpm dev` | Start Docker + backend + mobile all at once |
+| `pnpm backend` | Start Spring Boot backend server |
+| `pnpm backend:test` | Run backend tests |
 | `pnpm mobile` | Start Expo development server |
 | `pnpm mobile:ios` | Run on iOS simulator |
 | `pnpm mobile:android` | Run on Android emulator |
@@ -94,8 +91,6 @@ cookmate/
 | `pnpm docker:up` | Start Docker services |
 | `pnpm docker:down` | Stop Docker services |
 | `pnpm docker:logs` | View Docker logs |
-| `cd backend && ./mvnw spring-boot:run` | Start backend server |
-| `cd backend && ./mvnw clean verify` | Run backend tests |
 
 ## Environment Variables
 
