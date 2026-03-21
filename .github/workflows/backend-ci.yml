@@ -34,6 +34,10 @@ jobs:
           cache: maven
           cache-dependency-path: backend/pom.xml
 
+      - name: Format check
+        working-directory: backend
+        run: ./mvnw spotless:check
+
       - name: Build and test
         working-directory: backend
         run: ./mvnw clean verify
