@@ -28,13 +28,7 @@ export function CategoryChips({ categories, selected, onSelect }: CategoryChipsP
               accessibilityRole="button"
               accessibilityState={{ selected: isActive }}
             >
-              <Text
-                style={[
-                  Typography.chip,
-                  styles.chipText,
-                  isActive && styles.chipTextActive,
-                ]}
-              >
+              <Text style={[Typography.chip, styles.chipText, isActive && styles.chipTextActive]}>
                 {item}
               </Text>
             </Pressable>

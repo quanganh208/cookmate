@@ -14,11 +14,7 @@ interface RecipeCardCompactProps {
 /** Compact recipe card for 2-column grid layout with press animation */
 export function RecipeCardCompact({ recipe, onPress }: RecipeCardCompactProps) {
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      style={styles.card}
-      accessibilityLabel={recipe.title}
-    >
+    <AnimatedPressable onPress={onPress} style={styles.card} accessibilityLabel={recipe.title}>
       <Image
         source={recipe.imageUrl}
         style={styles.image}
@@ -27,7 +23,10 @@ export function RecipeCardCompact({ recipe, onPress }: RecipeCardCompactProps) {
         transition={300}
       />
       <View style={styles.content}>
-        <Text style={[Typography.meta, { color: Colors.textPrimary, fontWeight: '600' }]} numberOfLines={1}>
+        <Text
+          style={[Typography.meta, { color: Colors.textPrimary, fontWeight: '600' }]}
+          numberOfLines={1}
+        >
           {recipe.title}
         </Text>
         <Text style={[Typography.caption, { color: Colors.textSecondary }]} numberOfLines={1}>

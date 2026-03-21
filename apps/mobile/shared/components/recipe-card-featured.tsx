@@ -14,11 +14,7 @@ interface RecipeCardFeaturedProps {
 /** Full-width recipe card with gradient overlay and press animation */
 export function RecipeCardFeatured({ recipe, onPress }: RecipeCardFeaturedProps) {
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      style={styles.card}
-      accessibilityLabel={recipe.title}
-    >
+    <AnimatedPressable onPress={onPress} style={styles.card} accessibilityLabel={recipe.title}>
       <Image
         source={recipe.imageUrl}
         style={styles.image}
@@ -32,11 +28,7 @@ export function RecipeCardFeatured({ recipe, onPress }: RecipeCardFeaturedProps)
         </Text>
         <View style={styles.metaRow}>
           <View style={styles.authorRow}>
-            <Image
-              source={recipe.author.avatarUrl}
-              style={styles.avatar}
-              transition={200}
-            />
+            <Image source={recipe.author.avatarUrl} style={styles.avatar} transition={200} />
             <Text style={[Typography.meta, { color: Colors.textSecondary }]}>
               {recipe.author.name}
             </Text>

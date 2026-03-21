@@ -1,10 +1,6 @@
 import { PropsWithChildren } from 'react';
 import { ViewStyle } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 interface AnimatedPressableProps extends PropsWithChildren {
