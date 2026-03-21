@@ -3,8 +3,8 @@
 ## Overview
 
 Cookmate uses a monorepo with two main applications:
-- **Mobile**: React Native Expo (SDK 55) with Expo Router file-based routing
-- **Backend**: Spring Boot 3.5.11 REST API (Java 21) with Spring Data MongoDB
+- **Mobile**: React Native Expo (SDK 55) with feature-based modular architecture, TanStack Query for offline-first caching, Zustand for UI state
+- **Backend**: Spring Boot 4.0.3 REST API (Java 21) with Spring Data MongoDB
 - **Database**: MongoDB 8.0 (containerized)
 
 ## Architecture Diagram
@@ -25,6 +25,47 @@ Cookmate uses a monorepo with two main applications:
                                             │                  │
                                             └──────────────────┘
 ```
+
+## Mobile Architecture (Feature-Based)
+
+**Design Pattern:** Feature modules + shared utilities with clear separation of concerns.
+
+```
+Features (self-contained)
+├── Home           → HomeScreen + header/carousel/trending components
+├── Recipes        → RecipeDetailScreen + repository, hooks, store, types
+├── Search         → SearchScreen + search logic
+├── Favorites      → FavoritesScreen + bookmark management
+├── CreateRecipe   → CreateRecipeScreen + form logic
+└── Profile        → ProfileScreen + user data
+
+Shared (cross-feature)
+├── Components     → AnimatedPressable, CategoryChips, RecipeCards
+├── API            → HTTP client, QueryClientProvider, MMKV storage
+├── Constants      → Colors, fonts, mock data
+└── Types          → Global type re-exports
+```
+
+**State Management:**
+- **UI State (Zustand):** Filters, selections, visible modals, UI toggles. Local to feature/component. No persistence.
+- **Server State (TanStack Query):** Recipes, user data, async operations. Cached via MMKV + sync persister. Persists across sessions.
+- **Offline Support:** MMKV + TanStack Query sync persister enables recipe browsing without internet; cache syncs when connection restored.
+
+**API Layer (Repository Pattern):**
+```
+RecipesRepository (recipes/api/)
+├── list(params)     → GET /recipes (cached via useRecipes hook)
+├── getById(id)      → GET /recipes/{id}
+└── create(data)     → POST /recipes
+```
+Each repository method returns Promise; TanStack Query wraps with caching, retries, offline support.
+
+**Route Layer (Thin Wrappers):**
+```
+app/(tabs)/index.tsx         → import { HomeScreen } from '@/features/home'; export default HomeScreen;
+app/recipe/[id].tsx          → import { RecipeDetailScreen } from '@/features/recipes'; export default RecipeDetailScreen;
+```
+No business logic in route files; routes delegate entirely to feature screens.
 
 ## Monorepo Layout
 
@@ -56,13 +97,15 @@ Controller → Service → Repository → MongoDB
     DTO        Model
 ```
 
-- **Controller** — REST endpoints, request validation
-- **Service** — Business logic, orchestration
-- **Repository** — Data access via Spring Data MongoDB
-- **Model** — Domain entities with MongoDB annotations
-- **DTO** — Request/response data transfer objects
-- **Config** — CORS, MongoDB auditing, security
-- **Exception** — Custom exception handlers
+**Current Status:** Foundation scaffolded. Only `HealthController` (`GET /api/health`) and configs (CORS, MongoDB auditing, OpenAPI) are implemented. Service, Repository, Model, DTO, and Exception layers are directory placeholders pending Phase 3 (Authentication).
+
+- **Controller** — REST endpoints, request validation (`HealthController` implemented)
+- **Service** — Business logic, orchestration (pending Phase 3)
+- **Repository** — Data access via Spring Data MongoDB (pending Phase 3)
+- **Model** — Domain entities with MongoDB annotations (pending Phase 3)
+- **DTO** — Request/response data transfer objects (pending Phase 3)
+- **Config** — CORS, MongoDB auditing, OpenAPI (implemented)
+- **Exception** — Custom exception handlers (pending Phase 3)
 
 ## Data Flow
 
