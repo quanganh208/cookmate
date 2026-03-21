@@ -2,10 +2,7 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
-import {
-  Lora_600SemiBold,
-  Lora_700Bold,
-} from '@expo-google-fonts/lora';
+import { Lora_600SemiBold, Lora_700Bold } from '@expo-google-fonts/lora';
 import {
   DMSans_400Regular,
   DMSans_500Medium,

@@ -19,9 +19,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome6 name="house" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <FontAwesome6 name="house" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -37,9 +35,7 @@ export default function TabLayout() {
         name="create"
         options={{
           title: 'Create',
-          tabBarIcon: ({ size }) => (
-            <FontAwesome6 name="plus" size={size} color={Colors.primary} />
-          ),
+          tabBarIcon: ({ size }) => <FontAwesome6 name="plus" size={size} color={Colors.primary} />,
         }}
       />
       <Tabs.Screen
@@ -55,9 +51,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome6 name="user" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <FontAwesome6 name="user" size={size} color={color} />,
         }}
       />
     </Tabs>
