@@ -1,0 +1,24 @@
+# Dependencies
+node_modules
+.pnpm-store
+pnpm-lock.yaml
+
+# Backend (Java/Spring Boot)
+backend/
+docker/
+
+# Build artifacts
+dist
+build
+**/.expo
+**/android
+**/ios
+
+# Tooling
+.claude/
+.opencode/
+
+# IDE & OS
+.vscode
+.idea
+.DS_Store
