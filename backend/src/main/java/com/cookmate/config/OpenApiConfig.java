@@ -11,9 +11,10 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI cookmateOpenAPI() {
         return new OpenAPI()
-                .info(new Info()
-                        .title("Cookmate API")
-                        .description("Backend API for Cookmate recipe sharing app")
-                        .version("0.0.1"));
+                .info(
+                        new Info()
+                                .title("Cookmate API")
+                                .description("Backend API for Cookmate recipe sharing app")
+                                .version("0.0.1"));
     }
 }
