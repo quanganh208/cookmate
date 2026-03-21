@@ -7,6 +7,7 @@ Thank you for your interest in contributing to Cookmate. We appreciate your effo
 ### Prerequisites
 
 Ensure you have the required tools installed:
+
 - **Node.js** 22+ — [nodejs.org](https://nodejs.org)
 - **pnpm** 10+ — `npm install -g pnpm`
 - **Java** 21+ — [Adoptium Temurin](https://adoptium.net)
@@ -15,22 +16,26 @@ Ensure you have the required tools installed:
 ### Setting Up Your Development Environment
 
 1. **Fork the repository** and clone your fork locally:
+
    ```bash
    git clone https://github.com/your-username/cookmate.git
    cd cookmate
    ```
 
 2. **Install frontend dependencies:**
+
    ```bash
    pnpm install
    ```
 
 3. **Start Docker services** (MongoDB):
+
    ```bash
    docker compose up -d
    ```
 
 4. **Start the backend** (in a new terminal):
+
    ```bash
    cd backend && ./mvnw spring-boot:run
    ```
@@ -66,6 +71,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org) specification
 ```
 
 **Types:**
+
 - `feat:` — New feature
 - `fix:` — Bug fix
 - `chore:` — Maintenance, dependency updates, config changes
@@ -75,6 +81,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org) specification
 - `style:` — Code style changes (formatting, missing semicolons)
 
 **Examples:**
+
 ```
 feat: add recipe rating endpoint
 fix: resolve MongoDB connection timeout
@@ -96,6 +103,7 @@ Before committing code, review the detailed code standards in [docs/code-standar
 ## Pull Request Process
 
 1. **Create a branch** from `main`:
+
    ```bash
    git checkout -b feat/your-feature-name
    ```
