@@ -9,18 +9,34 @@
 
 ## Color Palette
 
-TODO: Define Cookmate brand colors (primary, secondary, accent, semantics)
-- Primary color (brand identity)
-- Secondary color (supporting elements)
-- Success/Error/Warning colors (status feedback)
-- Neutral grays (backgrounds, text)
+Cookmate brand colors (warm & cozy):
+- **Primary:** `#FF7A3D` (warm orange) — buttons, active states, links
+- **Primary Dark:** `#E85D20` — hover/pressed states
+- **Primary Light:** `#FFE8DC` — backgrounds, disabled states
+- **Secondary:** `#8B6914` — accent, secondary actions
+- **Background:** `#FFF8F3` — app background
+- **Surface:** `#FFFFFF` — cards, panels
+- **Text Primary:** `#2D1810` — body text (dark warm brown)
+- **Text Secondary:** `#8B7355` — labels, hints (medium warm brown)
+- **Divider:** `#E8DDD0` — borders, separators (warm beige)
+- **Error:** `#D32F2F` — validation, errors
+- **Success:** `#388E3C` — confirmation, success states
+- **Warning:** `#F57C00` — alerts, warnings
+- **Shadow:** `rgba(139,105,20,0.12)` — card shadows
 
 ## Typography
 
-TODO: Define font family and hierarchy
-- Body font family (iOS and Android defaults)
-- Font sizes for: heading 1-4, body, caption
-- Line heights (1.5 for readability)
+Font hierarchy (custom fonts):
+- **Headings:** Lora (serif, warm & elegant)
+- **Body/UI:** DM Sans (sans-serif, modern & clean)
+- **Heading 1:** Lora 28px, bold (0.02 letter spacing)
+- **Heading 2:** Lora 24px, semibold
+- **Heading 3:** Lora 20px, semibold
+- **Heading 4:** Lora 16px, semibold
+- **Body:** DM Sans 15px, regular (1.5 line height)
+- **Caption:** DM Sans 12px, regular
+- **Label/Meta:** DM Sans 14px, semibold
+- **Line height:** 1.5 for readability on mobile screens
 
 ## Spacing & Layout
 
