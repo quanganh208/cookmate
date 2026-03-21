@@ -30,6 +30,9 @@ jobs:
       - name: Lint
         run: pnpm --filter mobile lint
 
+      - name: Format check
+        run: pnpm format:check
+
       - name: TypeScript check
         run: pnpm --filter mobile tsc --noEmit
 
