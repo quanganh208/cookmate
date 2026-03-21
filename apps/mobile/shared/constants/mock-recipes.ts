@@ -14,7 +14,8 @@ export const MOCK_RECIPES: Recipe[] = [
   {
     id: '1',
     title: 'Phở Bò Hà Nội',
-    description: 'Phở bò truyền thống với nước dùng ninh xương 12 tiếng, bánh phở tươi và thịt bò tái.',
+    description:
+      'Phở bò truyền thống với nước dùng ninh xương 12 tiếng, bánh phở tươi và thịt bò tái.',
     imageUrl: 'https://picsum.photos/seed/pho/800/450',
     cookTime: 180,
     difficulty: 'Hard',
