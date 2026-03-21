@@ -3,6 +3,7 @@
 ## Local Development
 
 ### Prerequisites
+
 - Docker & Docker Compose installed
 - Node.js 22.x and pnpm 10.7.0
 - Java 21 LTS and Maven 3.9.x (via mvnw wrapper)
@@ -36,6 +37,7 @@ curl http://localhost:8080/actuator/health
 ### Start Development Servers
 
 **Backend API:**
+
 ```bash
 cd backend
 ./mvnw clean install
@@ -43,6 +45,7 @@ cd backend
 ```
 
 **Mobile App:**
+
 ```bash
 cd apps/mobile
 pnpm start
@@ -77,11 +80,13 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
 **Build command:**
+
 ```bash
 docker build -f docker/Dockerfile.backend -t cookmate-api:latest .
 ```
 
 **Run container:**
+
 ```bash
 docker run -d \
   -e SPRING_PROFILES_ACTIVE=prod \
@@ -94,12 +99,13 @@ docker run -d \
 
 ### Spring Boot Profiles
 
-| Profile | Use | MongoDB | Logging |
-|---------|-----|---------|---------|
-| `dev` | Local development | localhost:27017 | DEBUG |
-| `prod` | Production | env var | WARN |
+| Profile | Use               | MongoDB         | Logging |
+| ------- | ----------------- | --------------- | ------- |
+| `dev`   | Local development | localhost:27017 | DEBUG   |
+| `prod`  | Production        | env var         | WARN    |
 
 **Select profile:**
+
 ```bash
 # Via command line
 ./mvnw spring-boot:run -Dspring.profiles.active=dev
@@ -115,6 +121,7 @@ docker run -e SPRING_PROFILES_ACTIVE=prod cookmate-api
 ### Environment Variables
 
 **Required for production:**
+
 ```bash
 MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/cookmate
 SPRING_PROFILES_ACTIVE=prod
@@ -123,6 +130,7 @@ LOG_LEVEL=WARN
 ```
 
 **Optional:**
+
 ```bash
 JWT_SECRET=your-secret-key-here
 JWT_EXPIRATION_MS=3600000
@@ -133,6 +141,7 @@ CORS_ALLOWED_ORIGINS=https://cookmate.com,https://app.cookmate.com
 ### Load Configuration
 
 **application-dev.yml:**
+
 ```yaml
 spring:
   data:
@@ -144,6 +153,7 @@ logging:
 ```
 
 **application-prod.yml:**
+
 ```yaml
 spring:
   data:
@@ -163,6 +173,7 @@ server:
 **Enabled by default** via `spring-boot-starter-actuator`.
 
 **Endpoints:**
+
 ```bash
 # Health check (liveness & readiness)
 GET /actuator/health
@@ -184,6 +195,7 @@ GET /api/health
 ```
 
 **Configure probes:**
+
 ```properties
 # liveness (is app running?)
 management.endpoint.health.probes.enabled=true
@@ -196,6 +208,7 @@ management.health.readinessState.enabled=true
 ## Troubleshooting
 
 ### Port Conflicts
+
 ```bash
 # MongoDB already running
 lsof -i :27017 | grep LISTEN
@@ -206,6 +219,7 @@ lsof -i :8080 | grep LISTEN
 ```
 
 ### MongoDB Connection Issues
+
 ```bash
 # Verify MongoDB is running
 docker ps | grep mongodb
@@ -219,6 +233,7 @@ docker run --rm --network cookmate-network \
 ```
 
 ### Java Version Mismatch
+
 ```bash
 # Verify Java 21 is in use
 java -version
@@ -229,6 +244,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 ```
 
 ### Dependency Build Failures
+
 ```bash
 # Clear Maven cache
 rm -rf ~/.m2/repository
@@ -239,6 +255,7 @@ rm -rf ~/.m2/repository
 ```
 
 ### API Not Responding
+
 ```bash
 # Check if service is listening
 netstat -tlnp | grep 8080
@@ -253,6 +270,7 @@ curl -v http://localhost:8080/actuator/health
 ## CI/CD Pipelines
 
 See `.github/workflows/`:
+
 - **frontend-ci.yml** — Lint, test, build mobile (runs on PR/push)
 - **backend-ci.yml** — Maven tests, Checkstyle, build JAR (runs on PR/push)
 
