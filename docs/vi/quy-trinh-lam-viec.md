@@ -8,12 +8,12 @@ Hướng dẫn quy trình làm việc với Git và tạo Pull Request trong Coo
 
 Tên branch phải mô tả rõ loại thay đổi:
 
-| Loại | Quy tắc | Ví dụ |
-|------|---------|-------|
-| Tính năng mới | `feat/mô-tả` | `feat/recipe-search-endpoint` |
-| Sửa lỗi | `fix/mô-tả` | `fix/mongodb-connection-timeout` |
-| Bảo trì | `chore/mô-tả` | `chore/update-dependencies` |
-| Tài liệu | `docs/mô-tả` | `docs/api-reference` |
+| Loại          | Quy tắc       | Ví dụ                            |
+| ------------- | ------------- | -------------------------------- |
+| Tính năng mới | `feat/mô-tả`  | `feat/recipe-search-endpoint`    |
+| Sửa lỗi       | `fix/mô-tả`   | `fix/mongodb-connection-timeout` |
+| Bảo trì       | `chore/mô-tả` | `chore/update-dependencies`      |
+| Tài liệu      | `docs/mô-tả`  | `docs/api-reference`             |
 
 ## Quy ước commit
 
@@ -29,15 +29,15 @@ Tuân theo [Conventional Commits](https://www.conventionalcommits.org):
 
 ### Các loại commit
 
-| Loại | Nghĩa | Ví dụ |
-|------|-------|-------|
-| `feat:` | Tính năng mới | `feat: add recipe rating endpoint` |
-| `fix:` | Sửa lỗi | `fix: resolve MongoDB connection timeout` |
-| `docs:` | Cập nhật tài liệu | `docs: update API documentation` |
-| `refactor:` | Cấu trúc lại code | `refactor: simplify recipe filtering logic` |
-| `test:` | Thêm hoặc sửa test | `test: add unit tests for recipe service` |
-| `chore:` | Bảo trì, cập nhật deps | `chore: update Spring Boot to 4.0.3` |
-| `style:` | Format, linting | `style: add missing semicolons` |
+| Loại        | Nghĩa                  | Ví dụ                                       |
+| ----------- | ---------------------- | ------------------------------------------- |
+| `feat:`     | Tính năng mới          | `feat: add recipe rating endpoint`          |
+| `fix:`      | Sửa lỗi                | `fix: resolve MongoDB connection timeout`   |
+| `docs:`     | Cập nhật tài liệu      | `docs: update API documentation`            |
+| `refactor:` | Cấu trúc lại code      | `refactor: simplify recipe filtering logic` |
+| `test:`     | Thêm hoặc sửa test     | `test: add unit tests for recipe service`   |
+| `chore:`    | Bảo trì, cập nhật deps | `chore: update Spring Boot to 4.0.3`        |
+| `style:`    | Format, linting        | `style: add missing semicolons`             |
 
 ## Quy trình tạo Pull Request
 
@@ -69,6 +69,7 @@ git push origin feat/your-feature-name
 ### 4. Mở Pull Request trên GitHub
 
 Điều kiện bắt buộc:
+
 - Tiêu đề rõ ràng
 - Mô tả các thay đổi
 - Tham chiếu issue (nếu có): `Fixes #123`
@@ -77,6 +78,7 @@ git push origin feat/your-feature-name
 ### 5. Chạy CI checks
 
 GitHub Actions sẽ chạy tự động:
+
 - Linting checks (ESLint)
 - Type checking (TypeScript)
 - Unit tests
