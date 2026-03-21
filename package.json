@@ -15,12 +15,16 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f"
+    "docker:logs": "docker compose logs -f",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
     "concurrently": "^9.2.1",
     "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.2.0",
     "typescript-eslint": "^8.57.1"
   }
