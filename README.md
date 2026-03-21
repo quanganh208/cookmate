@@ -23,7 +23,7 @@
 | Layer | Technology | Version |
 |-------|-----------|---------|
 | Mobile | React Native Expo (Expo Router) | SDK 55 |
-| Backend | Spring Boot | 3.5.11 |
+| Backend | Spring Boot | 4.0.3 |
 | Language (BE) | Java | 21 LTS |
 | Database | MongoDB | 8.0 |
 | Build (FE) | pnpm workspaces | 10.x |
@@ -35,6 +35,9 @@
 - **pnpm** 10+ — `npm install -g pnpm`
 - **Java** 21 LTS — [Adoptium Temurin](https://adoptium.net)
 - **Docker** — [docker.com](https://www.docker.com)
+- **Xcode** 16+ (iOS) or **Android Studio** (Android) — required for development builds
+
+> **Note:** This project uses native modules (`react-native-mmkv`, `react-native-reanimated`) that are **not compatible with Expo Go**. You must use a [development build](https://docs.expo.dev/develop/development-builds/introduction/).
 
 ## Quick Start
 
@@ -45,8 +48,14 @@ git clone <repo-url> cookmate && cd cookmate
 # Install dependencies
 pnpm install
 
-# Start everything (Docker + backend + mobile)
+# Start backend (Docker + Spring Boot)
 pnpm dev
+
+# In a separate terminal — build and run the mobile app
+pnpm mobile:prebuild          # Generate native projects (first time only)
+pnpm mobile:ios               # Build & run on iOS simulator
+# or
+pnpm mobile:android           # Build & run on Android emulator
 ```
 
 ## Project Structure
@@ -82,9 +91,10 @@ cookmate/
 | `pnpm dev` | Start Docker + backend + mobile all at once |
 | `pnpm backend` | Start Spring Boot backend server |
 | `pnpm backend:test` | Run backend tests |
-| `pnpm mobile` | Start Expo development server |
-| `pnpm mobile:ios` | Run on iOS simulator |
-| `pnpm mobile:android` | Run on Android emulator |
+| `pnpm mobile` | Start Expo dev server (requires prior prebuild) |
+| `pnpm mobile:prebuild` | Generate native iOS/Android projects |
+| `pnpm mobile:ios` | Build & run on iOS simulator |
+| `pnpm mobile:android` | Build & run on Android emulator |
 | `pnpm lint` | Run ESLint |
 | `pnpm format` | Format code with Prettier |
 | `pnpm format:check` | Check formatting |
