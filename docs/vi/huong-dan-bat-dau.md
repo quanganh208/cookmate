@@ -8,12 +8,12 @@ Chào mừng bạn đến với Cookmate! Hướng dẫn này giúp bạn thiế
 
 Đảm bảo bạn đã cài đặt các công cụ sau:
 
-| Công cụ | Phiên bản | Tải về |
-|---------|----------|--------|
-| Node.js | 22+ | [nodejs.org](https://nodejs.org) |
-| pnpm | 10+ | `npm install -g pnpm` |
-| Java | 21 LTS | [Adoptium Temurin](https://adoptium.net) |
-| Docker | Mới nhất | [docker.com](https://www.docker.com) |
+| Công cụ | Phiên bản | Tải về                                   |
+| ------- | --------- | ---------------------------------------- |
+| Node.js | 22+       | [nodejs.org](https://nodejs.org)         |
+| pnpm    | 10+       | `npm install -g pnpm`                    |
+| Java    | 21 LTS    | [Adoptium Temurin](https://adoptium.net) |
+| Docker  | Mới nhất  | [docker.com](https://www.docker.com)     |
 
 ## Cài đặt từng bước
 
@@ -65,6 +65,7 @@ pnpm mobile
 ```
 
 Chọn một trong các tùy chọn:
+
 - `i` — iOS simulator
 - `a` — Android emulator
 - `w` — Web browser
@@ -89,17 +90,17 @@ Kết quả: `{ "status": "UP" }` → backend sẵn sàng!
 
 ## Các lệnh thường dùng
 
-| Lệnh | Ý nghĩa |
-|------|---------|
-| `pnpm mobile` | Khởi động Expo dev server |
-| `pnpm mobile:ios` | Chạy trên iOS simulator |
-| `pnpm mobile:android` | Chạy trên Android emulator |
-| `pnpm lint` | Kiểm tra code style |
-| `pnpm format` | Format code tự động |
-| `pnpm docker:up` | Khởi động Docker services |
-| `pnpm docker:down` | Dừng Docker services |
-| `cd backend && ./mvnw spring-boot:run` | Khởi động backend |
-| `cd backend && ./mvnw clean verify` | Chạy unit tests backend |
+| Lệnh                                   | Ý nghĩa                    |
+| -------------------------------------- | -------------------------- |
+| `pnpm mobile`                          | Khởi động Expo dev server  |
+| `pnpm mobile:ios`                      | Chạy trên iOS simulator    |
+| `pnpm mobile:android`                  | Chạy trên Android emulator |
+| `pnpm lint`                            | Kiểm tra code style        |
+| `pnpm format`                          | Format code tự động        |
+| `pnpm docker:up`                       | Khởi động Docker services  |
+| `pnpm docker:down`                     | Dừng Docker services       |
+| `cd backend && ./mvnw spring-boot:run` | Khởi động backend          |
+| `cd backend && ./mvnw clean verify`    | Chạy unit tests backend    |
 
 ## Ghi chú
 
