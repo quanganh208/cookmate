@@ -62,10 +62,7 @@ export function FeaturedCarousel({ recipes, onRecipePress }: FeaturedCarouselPro
               contentFit="cover"
               transition={300}
             />
-            <LinearGradient
-              colors={['transparent', 'rgba(45,24,16,0.75)']}
-              style={styles.gradient}
-            >
+            <LinearGradient colors={['transparent', 'rgba(45,24,16,0.75)']} style={styles.gradient}>
               <Text style={[Typography.sectionTitle, { color: '#fff' }]} numberOfLines={2}>
                 {item.title}
               </Text>
@@ -79,10 +76,7 @@ export function FeaturedCarousel({ recipes, onRecipePress }: FeaturedCarouselPro
       {/* Dot indicators */}
       <View style={styles.dots}>
         {recipes.map((r, i) => (
-          <View
-            key={r.id}
-            style={[styles.dot, i === activeIndex && styles.dotActive]}
-          />
+          <View key={r.id} style={[styles.dot, i === activeIndex && styles.dotActive]} />
         ))}
       </View>
     </View>

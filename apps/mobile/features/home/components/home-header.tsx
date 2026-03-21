@@ -8,9 +8,7 @@ import { Typography } from '@/shared/constants/fonts';
 export function HomeHeader() {
   return (
     <View style={styles.container}>
-      <Text style={[Typography.appTitle, { color: Colors.primary }]}>
-        Cookmate
-      </Text>
+      <Text style={[Typography.appTitle, { color: Colors.primary }]}>Cookmate</Text>
       <View style={styles.actions}>
         <FontAwesome6 name="bell" size={22} color={Colors.textPrimary} />
         <Image

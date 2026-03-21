@@ -25,10 +25,7 @@ export function HomeScreen() {
   const selectedCategory = useRecipeUIStore((s) => s.selectedCategory);
   const setSelectedCategory = useRecipeUIStore((s) => s.setSelectedCategory);
 
-  const featuredRecipes = useMemo(
-    () => MOCK_RECIPES.filter((r) => r.isFeatured),
-    [],
-  );
+  const featuredRecipes = useMemo(() => MOCK_RECIPES.filter((r) => r.isFeatured), []);
 
   // Top 6 by like count for trending
   const trendingRecipes = useMemo(
@@ -59,15 +56,9 @@ export function HomeScreen() {
           onSelect={setSelectedCategory}
         />
 
-        <FeaturedCarousel
-          recipes={featuredRecipes}
-          onRecipePress={handleRecipePress}
-        />
+        <FeaturedCarousel recipes={featuredRecipes} onRecipePress={handleRecipePress} />
 
-        <TrendingSection
-          recipes={trendingRecipes}
-          onRecipePress={handleRecipePress}
-        />
+        <TrendingSection recipes={trendingRecipes} onRecipePress={handleRecipePress} />
 
         {/* Recent Recipes — mixed layout */}
         <View style={styles.recentHeader}>
@@ -88,10 +79,7 @@ export function HomeScreen() {
             <View style={styles.grid}>
               {recentRecipes.slice(1).map((recipe) => (
                 <View key={recipe.id} style={{ width: cardWidth }}>
-                  <RecipeCardCompact
-                    recipe={recipe}
-                    onPress={() => handleRecipePress(recipe.id)}
-                  />
+                  <RecipeCardCompact recipe={recipe} onPress={() => handleRecipePress(recipe.id)} />
                 </View>
               ))}
             </View>

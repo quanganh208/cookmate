@@ -15,9 +15,7 @@ export function TrendingSection({ recipes, onRecipePress }: TrendingSectionProps
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[Typography.sectionTitle, { color: Colors.textPrimary }]}>
-          Trending Now
-        </Text>
+        <Text style={[Typography.sectionTitle, { color: Colors.textPrimary }]}>Trending Now</Text>
         <Text style={[Typography.meta, { color: Colors.primary }]}>See all</Text>
       </View>
       <View style={styles.listWrapper}>
@@ -40,13 +38,24 @@ export function TrendingSection({ recipes, onRecipePress }: TrendingSectionProps
                 transition={300}
               />
               <Text
-                style={[Typography.meta, { color: Colors.textPrimary, paddingHorizontal: 8, paddingTop: 8 }]}
+                style={[
+                  Typography.meta,
+                  { color: Colors.textPrimary, paddingHorizontal: 8, paddingTop: 8 },
+                ]}
                 numberOfLines={1}
               >
                 {item.title}
               </Text>
               <Text
-                style={[Typography.caption, { color: Colors.textSecondary, paddingHorizontal: 8, paddingBottom: 8, paddingTop: 4 }]}
+                style={[
+                  Typography.caption,
+                  {
+                    color: Colors.textSecondary,
+                    paddingHorizontal: 8,
+                    paddingBottom: 8,
+                    paddingTop: 4,
+                  },
+                ]}
               >
                 {item.cookTime} min · {item.difficulty}
               </Text>
