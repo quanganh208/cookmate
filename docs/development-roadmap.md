@@ -5,19 +5,20 @@
 
 ## Phase Overview
 
-| Phase | Description | Status | Target | Dependencies |
-|-------|-------------|--------|--------|--------------|
-| Phase 1 | Foundation (monorepo, mobile skeleton, backend skeleton, Docker) | Complete | 2026-03-06 | — |
-| Phase 2 | Home Screen UI (5-tab nav, home layout, components) | Complete | 2026-03-20 | Phase 1 |
-| Phase 2.5 | Mobile Restructure (feature-based architecture, state management, offline) | Complete | 2026-03-21 | Phase 2 |
-| Phase 3 | Authentication (user registration, JWT, profile) | Planned | 2026-04-30 | Phase 2.5 |
-| Phase 4 | Recipes (CRUD, ingredients, steps, images, search) | Planned | 2026-06-30 | Phase 3 |
-| Phase 5 | Social (follow, like, bookmark, comments, ratings) | Planned | 2026-08-31 | Phase 4 |
-| Phase 6 | AI Features (suggestions, nutrition, meal planning) | Planned | 2026-10-31 | Phase 4, 5 |
+| Phase     | Description                                                                | Status   | Target     | Dependencies |
+| --------- | -------------------------------------------------------------------------- | -------- | ---------- | ------------ |
+| Phase 1   | Foundation (monorepo, mobile skeleton, backend skeleton, Docker)           | Complete | 2026-03-06 | —            |
+| Phase 2   | Home Screen UI (5-tab nav, home layout, components)                        | Complete | 2026-03-20 | Phase 1      |
+| Phase 2.5 | Mobile Restructure (feature-based architecture, state management, offline) | Complete | 2026-03-21 | Phase 2      |
+| Phase 3   | Authentication (user registration, JWT, profile)                           | Planned  | 2026-04-30 | Phase 2.5    |
+| Phase 4   | Recipes (CRUD, ingredients, steps, images, search)                         | Planned  | 2026-06-30 | Phase 3      |
+| Phase 5   | Social (follow, like, bookmark, comments, ratings)                         | Planned  | 2026-08-31 | Phase 4      |
+| Phase 6   | AI Features (suggestions, nutrition, meal planning)                        | Planned  | 2026-10-31 | Phase 4, 5   |
 
 ## Phase Details
 
 ### Phase 1: Foundation (Complete)
+
 - Monorepo setup with pnpm workspaces
 - React Native Expo SDK 55 mobile app skeleton
 - Spring Boot 4.0.3 backend skeleton
@@ -26,6 +27,7 @@
 - ESLint 9, Prettier, code standards documentation
 
 ### Phase 2: Home Screen UI (Complete)
+
 - 5-tab bottom navigation (Home, Search, Create, Saved, Profile) via Expo Router
 - Home screen layout: header, search bar, category filters, featured carousel, trending section
 - Recipe feed: mixed layout (featured full-width card + 2-col grid)
@@ -35,16 +37,18 @@
 - Brand colors: primary #FF7A3D, secondary #8B6914
 
 ### Phase 2.5: Mobile Restructure (Complete)
+
 - Migrated from flat structure to feature-based modular architecture
 - 6 core features (home, recipes, search, favorites, create-recipe, profile) + shared utilities
 - State management: Zustand for UI state, TanStack React Query for server state
 - Offline-first architecture: MMKV storage + TanStack Query sync persister
 - Repository pattern for API abstraction (recipes-repository)
 - Route files reduced to 2-line wrappers (no business logic)
-- Path aliases (@/* → ./*) for clean imports
+- Path aliases (@/_ → ./_) for clean imports
 - Added dependencies: zustand, @tanstack/react-query, @tanstack/react-query-persist-client, react-native-mmkv
 
 ### Phase 3: Authentication
+
 - User registration with email validation
 - Login with JWT token generation and refresh
 - Password hashing (bcrypt) and validation
@@ -53,6 +57,7 @@
 - Session persistence on mobile
 
 ### Phase 4: Recipes
+
 - Recipe CRUD operations (create, read, update, delete)
 - Ingredient list management with quantities
 - Step-by-step recipe instructions
@@ -61,6 +66,7 @@
 - Filter by cuisine, difficulty, prep time
 
 ### Phase 5: Social
+
 - User discovery and follow system
 - Like/bookmark recipe functionality
 - Public recipe feeds
@@ -68,6 +74,7 @@
 - Notification system for interactions
 
 ### Phase 6: AI Features
+
 - Recipe suggestions based on available ingredients
 - Nutritional analysis and macros calculation
 - Smart meal planning (weekly plans)
