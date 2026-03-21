@@ -52,7 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - TypeScript 5.x with strict mode enabled
   - Expo routing structure (`app/_layout.tsx`, tab-based navigation)
   - Foundation for components, hooks, services, and types directories
-- **Backend API:** Spring Boot 3.5.11 REST API with Java 21 LTS
+- **Backend API:** Spring Boot 4.0.3 REST API with Java 21 LTS
   - Layered architecture (Controller → Service → Repository)
   - Spring Data MongoDB integration
   - Lombok for boilerplate reduction
@@ -90,7 +90,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Versions:**
   - Node.js 22.x, pnpm 10.7.0
   - React 19.2.0, React Native 0.83.2
-  - Spring Boot 3.5.11 (upgraded from 3.4)
+  - Spring Boot 4.0.3 (upgraded from 3.4)
   - MongoDB 8.0 (upgraded from 7.0)
   - Maven 3.9.x wrapper
   - ESLint 9.x (upgraded from 8.x)
