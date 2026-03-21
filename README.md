@@ -20,14 +20,14 @@
 
 ## Tech Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| Mobile | React Native Expo (Expo Router) | SDK 55 |
-| Backend | Spring Boot | 4.0.3 |
-| Language (BE) | Java | 21 LTS |
-| Database | MongoDB | 8.0 |
-| Build (FE) | pnpm workspaces | 10.x |
-| Build (BE) | Maven wrapper | 3.9.x |
+| Layer         | Technology                      | Version |
+| ------------- | ------------------------------- | ------- |
+| Mobile        | React Native Expo (Expo Router) | SDK 55  |
+| Backend       | Spring Boot                     | 4.0.3   |
+| Language (BE) | Java                            | 21 LTS  |
+| Database      | MongoDB                         | 8.0     |
+| Build (FE)    | pnpm workspaces                 | 10.x    |
+| Build (BE)    | Maven wrapper                   | 3.9.x   |
 
 ## Prerequisites
 
@@ -86,28 +86,28 @@ cookmate/
 
 ## Scripts Reference
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start Docker + backend + mobile all at once |
-| `pnpm backend` | Start Spring Boot backend server |
-| `pnpm backend:test` | Run backend tests |
-| `pnpm mobile` | Start Expo dev server (requires prior prebuild) |
-| `pnpm mobile:prebuild` | Generate native iOS/Android projects |
-| `pnpm mobile:ios` | Build & run on iOS simulator |
-| `pnpm mobile:android` | Build & run on Android emulator |
-| `pnpm lint` | Run ESLint |
-| `pnpm format` | Format code with Prettier |
-| `pnpm format:check` | Check formatting |
-| `pnpm docker:up` | Start Docker services |
-| `pnpm docker:down` | Stop Docker services |
-| `pnpm docker:logs` | View Docker logs |
+| Command                | Description                                     |
+| ---------------------- | ----------------------------------------------- |
+| `pnpm dev`             | Start Docker + backend + mobile all at once     |
+| `pnpm backend`         | Start Spring Boot backend server                |
+| `pnpm backend:test`    | Run backend tests                               |
+| `pnpm mobile`          | Start Expo dev server (requires prior prebuild) |
+| `pnpm mobile:prebuild` | Generate native iOS/Android projects            |
+| `pnpm mobile:ios`      | Build & run on iOS simulator                    |
+| `pnpm mobile:android`  | Build & run on Android emulator                 |
+| `pnpm lint`            | Run ESLint                                      |
+| `pnpm format`          | Format code with Prettier                       |
+| `pnpm format:check`    | Check formatting                                |
+| `pnpm docker:up`       | Start Docker services                           |
+| `pnpm docker:down`     | Stop Docker services                            |
+| `pnpm docker:logs`     | View Docker logs                                |
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/cookmate` |
-| `SPRING_PROFILES_ACTIVE` | Active Spring profile | `dev` |
+| Variable                 | Description               | Default                              |
+| ------------------------ | ------------------------- | ------------------------------------ |
+| `MONGODB_URI`            | MongoDB connection string | `mongodb://localhost:27017/cookmate` |
+| `SPRING_PROFILES_ACTIVE` | Active Spring profile     | `dev`                                |
 
 ## Contributing
 
