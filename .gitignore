@@ -40,6 +40,8 @@ docker/data/
 # Expo
 apps/mobile/.expo/
 apps/mobile/dist/
+apps/mobile/ios/
+apps/mobile/android/
 
 # Test coverage
 coverage/
