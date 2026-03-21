@@ -22,6 +22,7 @@ cookmate/
 **Architecture:** Feature-based modular design with 6 core features + shared utilities
 
 **Structure:**
+
 ```
 apps/mobile/
 ├── app/                      Expo Router routes (thin wrappers only)
@@ -85,25 +86,27 @@ apps/mobile/
 **Key Entry Point:** `apps/mobile/app/_layout.tsx` — Root layout wraps app in QueryClientProvider, loads fonts, initializes MMKV
 **Routing Strategy:** File-based via Expo Router; route files are 2-line wrappers (import screen + export)
 **State Management:**
-  - UI state: Zustand (filters, selections, UI toggled state)
-  - Server state: TanStack React Query (recipes, user data, async operations)
-  - Offline caching: MMKV storage + TanStack Query sync persister
-**Feature Module Pattern:** Each feature is self-contained with own components, hooks, api, store, types; imports shared utilities via `@/shared/*`
-**Shared Components:** 4 reusable components (AnimatedPressable, CategoryChips, RecipeCardFeatured, RecipeCardCompact)
-**API Layer:** Repository pattern (RecipesRepository) abstracts HTTP calls; TanStack Query wraps with caching + offline sync
-**Offline Strategy:** MMKV + TanStack Query sync persister caches recipe data locally for offline browsing
-**Styling:** React Native StyleSheet + warm color palette (primary #FF7A3D, secondary #8B6914)
-**Animations:** Reanimated for card press effects via AnimatedPressable
-**Images:** expo-image with blurhash placeholders
-**Lists:** FlashList for high-performance scrolling
-**Navigation:** 5-tab bottom nav (Home/Search/Create/Saved/Profile) with recipe detail stack modal
-**Path Aliases:** `@/*` maps to root `./` for clean imports across features
+
+- UI state: Zustand (filters, selections, UI toggled state)
+- Server state: TanStack React Query (recipes, user data, async operations)
+- Offline caching: MMKV storage + TanStack Query sync persister
+  **Feature Module Pattern:** Each feature is self-contained with own components, hooks, api, store, types; imports shared utilities via `@/shared/*`
+  **Shared Components:** 4 reusable components (AnimatedPressable, CategoryChips, RecipeCardFeatured, RecipeCardCompact)
+  **API Layer:** Repository pattern (RecipesRepository) abstracts HTTP calls; TanStack Query wraps with caching + offline sync
+  **Offline Strategy:** MMKV + TanStack Query sync persister caches recipe data locally for offline browsing
+  **Styling:** React Native StyleSheet + warm color palette (primary #FF7A3D, secondary #8B6914)
+  **Animations:** Reanimated for card press effects via AnimatedPressable
+  **Images:** expo-image with blurhash placeholders
+  **Lists:** FlashList for high-performance scrolling
+  **Navigation:** 5-tab bottom nav (Home/Search/Create/Saved/Profile) with recipe detail stack modal
+  **Path Aliases:** `@/*` maps to root `./` for clean imports across features
 
 ## Backend API (backend/)
 
 **Stack:** Spring Boot 4.0.3, Java 21 LTS, Spring Data MongoDB, Lombok, Maven
 
 **Architecture (Layered):**
+
 ```
 com.cookmate/
 ├── CookmateApplication.java  Entry point
@@ -124,6 +127,7 @@ com.cookmate/
 ## Database (MongoDB 8.0)
 
 **Collections (planned):**
+
 - `users` — User accounts, profiles, credentials
 - `recipes` — Recipe documents, ingredients, steps
 - `follows` — User follow relationships
@@ -132,12 +136,14 @@ com.cookmate/
 - `ratings` — Recipe ratings
 
 **Connection:**
+
 - Local: `mongodb://mongodb:27017/cookmate` (Docker)
 - Production: `MONGODB_URI` environment variable
 
 ## Infrastructure
 
 **Docker Services (docker-compose.yml):**
+
 - `mongodb` — MongoDB 8.0 with persistent volume, health checks
 - `api-server` — Spring Boot API (Dockerfile.backend multi-stage build)
 
@@ -148,6 +154,7 @@ com.cookmate/
 ## CI/CD (GitHub Actions)
 
 **Workflows:**
+
 - `.github/workflows/frontend-ci.yml` — Run tests, lint, build mobile app
 - `.github/workflows/backend-ci.yml` — Run Maven tests, checkstyle, build JAR
 
@@ -157,6 +164,7 @@ com.cookmate/
 ## Key Dependencies
 
 **Frontend:**
+
 - `expo` 55.x, `react-native` 0.83.2, `react` 19.2.0
 - `expo-router` v7 (file-based routing)
 - `zustand` 5.x (lightweight UI state management for filters, selections)
@@ -174,6 +182,7 @@ com.cookmate/
 - `typescript` 5.9.x, `eslint` 9.x, `prettier`
 
 **Backend:**
+
 - `spring-boot-starter-web` — REST framework
 - `spring-boot-starter-data-mongodb` — MongoDB access
 - `org.projectlombok:lombok` — Boilerplate reduction
@@ -185,9 +194,11 @@ com.cookmate/
 **Base URL:** `http://localhost:8080/api` (dev), `https://api.cookmate.com` (prod)
 
 **Implemented Endpoints:**
+
 - `GET /api/health` — Health check (`{"status": "ok"}`)
 
 **Planned Endpoints (Phase 3+):**
+
 - `POST /auth/register` — User registration (Phase 3)
 - `POST /auth/login` — Login, JWT token (Phase 3)
 - `GET /users/{id}` — User profile (Phase 3)
@@ -196,6 +207,7 @@ com.cookmate/
 - `GET /recipes/{id}` — Recipe detail (Phase 4)
 
 **Error Response Format:**
+
 ```json
 {
   "error": "NOT_FOUND",
