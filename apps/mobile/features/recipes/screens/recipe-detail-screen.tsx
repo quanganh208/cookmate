@@ -35,20 +35,14 @@ export function RecipeDetailScreen() {
         />
       </View>
       <View style={styles.content}>
-        <Text style={[Typography.appTitle, { color: Colors.textPrimary }]}>
-          {recipe.title}
-        </Text>
+        <Text style={[Typography.appTitle, { color: Colors.textPrimary }]}>{recipe.title}</Text>
         <View style={styles.metaRow}>
           <Text style={styles.badge}>{recipe.cookTime} min</Text>
           <Text style={styles.badge}>{recipe.difficulty}</Text>
           <Text style={styles.badge}>{recipe.category}</Text>
         </View>
         <View style={styles.authorRow}>
-          <Image
-            source={recipe.author.avatarUrl}
-            style={styles.avatar}
-            transition={200}
-          />
+          <Image source={recipe.author.avatarUrl} style={styles.avatar} transition={200} />
           <Text style={[Typography.meta, { color: Colors.textSecondary }]}>
             {recipe.author.name}
           </Text>

@@ -6,8 +6,7 @@ export const recipesRepository = {
   list: (params?: { category?: string }) =>
     apiClient<Recipe[]>(`/recipes${params?.category ? `?category=${params.category}` : ''}`),
 
-  getById: (id: string) =>
-    apiClient<Recipe>(`/recipes/${id}`),
+  getById: (id: string) => apiClient<Recipe>(`/recipes/${id}`),
 
   create: (data: Omit<Recipe, 'id' | 'createdAt' | 'likeCount'>) =>
     apiClient<Recipe>('/recipes', {
