@@ -3,6 +3,7 @@
 ## Overview
 
 Cookmate uses a monorepo with two main applications:
+
 - **Mobile**: React Native Expo (SDK 55) with feature-based modular architecture, TanStack Query for offline-first caching, Zustand for UI state
 - **Backend**: Spring Boot 4.0.3 REST API (Java 21) with Spring Data MongoDB
 - **Database**: MongoDB 8.0 (containerized)
@@ -47,24 +48,29 @@ Shared (cross-feature)
 ```
 
 **State Management:**
+
 - **UI State (Zustand):** Filters, selections, visible modals, UI toggles. Local to feature/component. No persistence.
 - **Server State (TanStack Query):** Recipes, user data, async operations. Cached via MMKV + sync persister. Persists across sessions.
 - **Offline Support:** MMKV + TanStack Query sync persister enables recipe browsing without internet; cache syncs when connection restored.
 
 **API Layer (Repository Pattern):**
+
 ```
 RecipesRepository (recipes/api/)
 ├── list(params)     → GET /recipes (cached via useRecipes hook)
 ├── getById(id)      → GET /recipes/{id}
 └── create(data)     → POST /recipes
 ```
+
 Each repository method returns Promise; TanStack Query wraps with caching, retries, offline support.
 
 **Route Layer (Thin Wrappers):**
+
 ```
 app/(tabs)/index.tsx         → import { HomeScreen } from '@/features/home'; export default HomeScreen;
 app/recipe/[id].tsx          → import { RecipeDetailScreen } from '@/features/recipes'; export default RecipeDetailScreen;
 ```
+
 No business logic in route files; routes delegate entirely to feature screens.
 
 ## Monorepo Layout
@@ -118,21 +124,22 @@ Controller → Service → Repository → MongoDB
 
 ## Environment Profiles
 
-| Profile | MongoDB | Logging | Use |
-|---------|---------|---------|-----|
-| dev | localhost:27017 | DEBUG | Local development |
-| prod | env var | WARN | Production |
+| Profile | MongoDB         | Logging | Use               |
+| ------- | --------------- | ------- | ----------------- |
+| dev     | localhost:27017 | DEBUG   | Local development |
+| prod    | env var         | WARN    | Production        |
 
 ## Docker Services
 
-| Service | Image | Port | Purpose |
-|---------|-------|------|---------|
-| mongodb | mongo:8.0 | 27017 | Database (healthcheck enabled) |
-| api-server | custom (Dockerfile.backend) | 8080 | Spring Boot API server |
+| Service    | Image                       | Port  | Purpose                        |
+| ---------- | --------------------------- | ----- | ------------------------------ |
+| mongodb    | mongo:8.0                   | 27017 | Database (healthcheck enabled) |
+| api-server | custom (Dockerfile.backend) | 8080  | Spring Boot API server         |
 
 ## Local Development Environment
 
 **docker-compose.yml** defines:
+
 - MongoDB with persistent volume (`mongodb_data`)
 - Health check (mongosh ping every 5s)
 - Backend service with Spring profile `dev`
