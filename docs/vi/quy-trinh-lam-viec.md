@@ -36,7 +36,7 @@ Tuân theo [Conventional Commits](https://www.conventionalcommits.org):
 | `docs:` | Cập nhật tài liệu | `docs: update API documentation` |
 | `refactor:` | Cấu trúc lại code | `refactor: simplify recipe filtering logic` |
 | `test:` | Thêm hoặc sửa test | `test: add unit tests for recipe service` |
-| `chore:` | Bảo trì, cập nhật deps | `chore: update Spring Boot to 3.5.11` |
+| `chore:` | Bảo trì, cập nhật deps | `chore: update Spring Boot to 4.0.3` |
 | `style:` | Format, linting | `style: add missing semicolons` |
 
 ## Quy trình tạo Pull Request

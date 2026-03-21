@@ -79,7 +79,7 @@ Routing dựa trên tên tệp:
 
 ## Backend API (backend/)
 
-**Stack:** Spring Boot 3.5.11, Java 21 LTS, Spring Data MongoDB, Lombok, Maven
+**Stack:** Spring Boot 4.0.3, Java 21 LTS, Spring Data MongoDB, Lombok, Maven
 
 ### Cấu trúc Layered Architecture
 
