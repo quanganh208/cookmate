@@ -62,20 +62,21 @@ apps/mobile/
 ### Routing (Expo Router)
 
 Routing dựa trên tên tệp:
+
 - `app/index.tsx` → `/` (Home)
 - `app/(tabs)/` → Tab navigation
 - `app/auth/login.tsx` → `/auth/login`
 
 ### Quy tắc đặt tên
 
-| Loại | Format | Ví dụ |
-|------|--------|-------|
-| Files | kebab-case | `recipe-card.tsx`, `use-auth.ts` |
-| Directories | kebab-case | `components/`, `hooks/` |
-| Components | PascalCase | `RecipeCard`, `HomeScreen` |
-| Functions/variables | camelCase | `getRecipes`, `isLoading` |
-| Constants | UPPER_SNAKE_CASE | `API_BASE_URL` |
-| Types/Interfaces | PascalCase | `Recipe`, `UserProfile` |
+| Loại                | Format           | Ví dụ                            |
+| ------------------- | ---------------- | -------------------------------- |
+| Files               | kebab-case       | `recipe-card.tsx`, `use-auth.ts` |
+| Directories         | kebab-case       | `components/`, `hooks/`          |
+| Components          | PascalCase       | `RecipeCard`, `HomeScreen`       |
+| Functions/variables | camelCase        | `getRecipes`, `isLoading`        |
+| Constants           | UPPER_SNAKE_CASE | `API_BASE_URL`                   |
+| Types/Interfaces    | PascalCase       | `Recipe`, `UserProfile`          |
 
 ## Backend API (backend/)
 
@@ -105,16 +106,17 @@ Request → Controller → Service → Repository → MongoDB → JSON Response
 
 ### Quy tắc đặt tên
 
-| Loại | Format | Ví dụ |
-|------|--------|-------|
-| Files/Classes | PascalCase | `RecipeService.java`, `RecipeController.java` |
-| Methods/variables | camelCase | `findByAuthor`, `recipeCount` |
-| Constants | UPPER_SNAKE_CASE | `MAX_PAGE_SIZE` |
-| Packages | lowercase.dots | `com.cookmate.controller` |
+| Loại              | Format           | Ví dụ                                         |
+| ----------------- | ---------------- | --------------------------------------------- |
+| Files/Classes     | PascalCase       | `RecipeService.java`, `RecipeController.java` |
+| Methods/variables | camelCase        | `findByAuthor`, `recipeCount`                 |
+| Constants         | UPPER_SNAKE_CASE | `MAX_PAGE_SIZE`                               |
+| Packages          | lowercase.dots   | `com.cookmate.controller`                     |
 
 ## Database (MongoDB 8.0)
 
 **Collections (kế hoạch):**
+
 - `users` — User accounts & profiles
 - `recipes` — Recipe documents
 - `follows` — User relationships
@@ -123,6 +125,7 @@ Request → Controller → Service → Repository → MongoDB → JSON Response
 - `ratings` — Ratings
 
 **Kết nối:**
+
 - Dev: `mongodb://mongodb:27017/cookmate` (Docker)
 - Prod: Dùng `MONGODB_URI` environment variable
 
@@ -130,10 +133,10 @@ Request → Controller → Service → Repository → MongoDB → JSON Response
 
 ### Services (docker-compose.yml)
 
-| Service | Image | Port | Mục đích |
-|---------|-------|------|---------|
-| mongodb | mongo:8.0 | 27017 | Database |
-| api-server | custom | 8080 | Spring Boot API |
+| Service    | Image     | Port  | Mục đích        |
+| ---------- | --------- | ----- | --------------- |
+| mongodb    | mongo:8.0 | 27017 | Database        |
+| api-server | custom    | 8080  | Spring Boot API |
 
 ### Network
 
@@ -141,13 +144,13 @@ Tất cả containers kết nối qua bridge network `cookmate-network` để gi
 
 ## Tìm kiếm tệp theo chức năng
 
-| Mục đích | Vị trí | Ví dụ |
-|---------|--------|-------|
-| Sửa API endpoint | `backend/.../controller/` | `RecipeController.java` |
-| Thêm UI component | `apps/mobile/app/` hoặc `components/` | `recipe-card.tsx` |
-| Thay đổi business logic | `backend/.../service/` | `RecipeService.java` |
-| Sửa MongoDB schema | `backend/.../model/` | `Recipe.java` |
-| Cấu hình CI/CD | `.github/workflows/` | `frontend-ci.yml`, `backend-ci.yml` |
+| Mục đích                | Vị trí                                | Ví dụ                               |
+| ----------------------- | ------------------------------------- | ----------------------------------- |
+| Sửa API endpoint        | `backend/.../controller/`             | `RecipeController.java`             |
+| Thêm UI component       | `apps/mobile/app/` hoặc `components/` | `recipe-card.tsx`                   |
+| Thay đổi business logic | `backend/.../service/`                | `RecipeService.java`                |
+| Sửa MongoDB schema      | `backend/.../model/`                  | `Recipe.java`                       |
+| Cấu hình CI/CD          | `.github/workflows/`                  | `frontend-ci.yml`, `backend-ci.yml` |
 
 ## Xem thêm
 
