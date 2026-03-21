@@ -19,38 +19,101 @@ cookmate/
 
 **Stack:** React Native Expo SDK 55, React 19.2.0, Expo Router v7, TypeScript
 
+**Architecture:** Feature-based modular design with 6 core features + shared utilities
+
 **Structure:**
 ```
 apps/mobile/
-├── app/                      Expo Router pages (file-based routing)
-│   ├── _layout.tsx           Root layout
-│   ├── index.tsx             Home screen
+├── app/                      Expo Router routes (thin wrappers only)
+│   ├── _layout.tsx           Root stack + QueryClientProvider + fonts
+│   ├── (tabs)/               Tab navigator group
+│   │   ├── _layout.tsx       5-tab bottom navigation
+│   │   ├── index.tsx         Home screen route
+│   │   ├── search.tsx        Search screen route
+│   │   ├── create.tsx        Create recipe screen route
+│   │   ├── saved.tsx         Favorites screen route
+│   │   └── profile.tsx       Profile screen route
+│   ├── recipe/[id].tsx       Recipe detail screen route
 │   └── +not-found.tsx        404 page
-├── app.json                  Expo configuration
-├── tsconfig.json             TypeScript configuration
-└── package.json              Mobile dependencies
+├── features/                 6 self-contained feature modules
+│   ├── home/                 Home feed feature
+│   │   ├── components/       HomeHeader, SearchBarShortcut, FeaturedCarousel, TrendingSection
+│   │   ├── screens/          HomeScreen component
+│   │   └── index.ts          Barrel export
+│   ├── recipes/              Recipe CRUD feature
+│   │   ├── api/              RecipesRepository (HTTP + caching)
+│   │   ├── hooks/            useRecipes query hook
+│   │   ├── screens/          RecipeDetailScreen
+│   │   ├── store.ts          Zustand UI state (filters, selections)
+│   │   ├── types.ts          Recipe, Author, Category interfaces
+│   │   └── index.ts          Barrel export
+│   ├── search/               Search feature
+│   │   ├── screens/          SearchScreen
+│   │   └── index.ts          Barrel export
+│   ├── favorites/            Saved/bookmarked recipes
+│   │   ├── screens/          FavoritesScreen
+│   │   └── index.ts          Barrel export
+│   ├── create-recipe/        Recipe creation feature
+│   │   ├── screens/          CreateRecipeScreen
+│   │   └── index.ts          Barrel export
+│   └── profile/              User profile feature
+│       ├── screens/          ProfileScreen
+│       └── index.ts          Barrel export
+├── shared/                   Cross-feature utilities
+│   ├── components/           Reusable UI components
+│   │   ├── animated-pressable.tsx    Press animation wrapper
+│   │   ├── category-chips.tsx        Category filter chips
+│   │   ├── recipe-card-featured.tsx  Full-width featured card
+│   │   ├── recipe-card-compact.tsx   Grid-layout compact card
+│   │   └── index.ts          Barrel export
+│   ├── api/                  HTTP & state management
+│   │   ├── api-client.ts     Axios-like HTTP wrapper
+│   │   ├── mmkv-storage.ts   Fast local storage (offline caching)
+│   │   ├── query-client-provider.tsx TanStack Query + persist setup
+│   │   └── index.ts          Barrel export
+│   ├── constants/            App-wide constants
+│   │   ├── colors.ts         Warm palette (primary, secondary, etc)
+│   │   ├── fonts.ts          Typography presets
+│   │   ├── mock-recipes.ts   15 mock recipes (for testing)
+│   │   └── index.ts          Barrel export
+│   ├── types/                Global TypeScript types
+│   │   └── index.ts          Barrel re-exports (Recipe, Author, etc)
+│   └── hooks/                (future: auth, navigation utilities)
+└── services/                 (empty, reserved for external integrations)
 ```
 
-**Key Entry Point:** `apps/mobile/app/_layout.tsx` — root layout with Router setup
-**Routing:** File-based via Expo Router (`app/(tabs)/`, `app/auth/`, etc.)
-**Styling:** React Native StyleSheet; no external CSS framework yet
-**State Management:** TODO (Redux, Zustand, Context)
+**Key Entry Point:** `apps/mobile/app/_layout.tsx` — Root layout wraps app in QueryClientProvider, loads fonts, initializes MMKV
+**Routing Strategy:** File-based via Expo Router; route files are 2-line wrappers (import screen + export)
+**State Management:**
+  - UI state: Zustand (filters, selections, UI toggled state)
+  - Server state: TanStack React Query (recipes, user data, async operations)
+  - Offline caching: MMKV storage + TanStack Query sync persister
+**Feature Module Pattern:** Each feature is self-contained with own components, hooks, api, store, types; imports shared utilities via `@/shared/*`
+**Shared Components:** 4 reusable components (AnimatedPressable, CategoryChips, RecipeCardFeatured, RecipeCardCompact)
+**API Layer:** Repository pattern (RecipesRepository) abstracts HTTP calls; TanStack Query wraps with caching + offline sync
+**Offline Strategy:** MMKV + TanStack Query sync persister caches recipe data locally for offline browsing
+**Styling:** React Native StyleSheet + warm color palette (primary #FF7A3D, secondary #8B6914)
+**Animations:** Reanimated for card press effects via AnimatedPressable
+**Images:** expo-image with blurhash placeholders
+**Lists:** FlashList for high-performance scrolling
+**Navigation:** 5-tab bottom nav (Home/Search/Create/Saved/Profile) with recipe detail stack modal
+**Path Aliases:** `@/*` maps to root `./` for clean imports across features
 
 ## Backend API (backend/)
 
-**Stack:** Spring Boot 3.5.11, Java 21 LTS, Spring Data MongoDB, Lombok, Maven
+**Stack:** Spring Boot 4.0.3, Java 21 LTS, Spring Data MongoDB, Lombok, Maven
 
 **Architecture (Layered):**
 ```
 com.cookmate/
 ├── CookmateApplication.java  Entry point
-├── controller/               REST endpoints (@RestController)
-├── service/                  Business logic (@Service)
-├── repository/               Data access (@Repository, Spring Data)
-├── model/                    MongoDB entities (@Document)
-├── dto/                      Request/Response transfer objects
-├── config/                   Spring beans, CORS, MongoDB
-└── exception/                Error handling (@ControllerAdvice)
+├── controller/               HealthController only (pending Phase 3)
+├── service/                  Scaffolded — empty (pending Phase 3)
+├── repository/               Scaffolded — empty (pending Phase 3)
+├── model/                    Scaffolded — empty (pending Phase 3)
+├── dto/                      Scaffolded — empty (pending Phase 3)
+├── config/                   CorsConfig, MongoConfig, OpenApiConfig (implemented)
+└── exception/                Scaffolded — empty (pending Phase 3)
 ```
 
 **Key Entry Point:** `backend/src/main/java/com/cookmate/CookmateApplication.java`
@@ -96,6 +159,17 @@ com.cookmate/
 **Frontend:**
 - `expo` 55.x, `react-native` 0.83.2, `react` 19.2.0
 - `expo-router` v7 (file-based routing)
+- `zustand` 5.x (lightweight UI state management for filters, selections)
+- `@tanstack/react-query` 5.x (server state + caching)
+- `@tanstack/react-query-persist-client` (persistent cache)
+- `@tanstack/query-sync-storage-persister` (offline sync persister)
+- `react-native-mmkv` 4.x (fast local storage for offline caching)
+- `expo-image` (optimized images with blurhash)
+- `react-native-reanimated` (spring animations)
+- `@shopify/flash-list` (high-performance scrolling)
+- `expo-linear-gradient` (overlay gradients)
+- `@expo-google-fonts/lora`, `@expo-google-fonts/dm-sans` (custom fonts)
+- `expo-splash-screen` (font loading splash screen)
 - `@expo/vector-icons` (FontAwesome6, MaterialCommunityIcons)
 - `typescript` 5.9.x, `eslint` 9.x, `prettier`
 
@@ -110,13 +184,16 @@ com.cookmate/
 
 **Base URL:** `http://localhost:8080/api` (dev), `https://api.cookmate.com` (prod)
 
-**Standard Endpoints (planned):**
-- `POST /auth/register` — User registration
-- `POST /auth/login` — Login, JWT token
-- `GET /users/{id}` — User profile
-- `GET /recipes` — List recipes (paginated)
-- `POST /recipes` — Create recipe
-- `GET /recipes/{id}` — Recipe detail
+**Implemented Endpoints:**
+- `GET /api/health` — Health check (`{"status": "ok"}`)
+
+**Planned Endpoints (Phase 3+):**
+- `POST /auth/register` — User registration (Phase 3)
+- `POST /auth/login` — Login, JWT token (Phase 3)
+- `GET /users/{id}` — User profile (Phase 3)
+- `GET /recipes` — List recipes, paginated (Phase 4)
+- `POST /recipes` — Create recipe (Phase 4)
+- `GET /recipes/{id}` — Recipe detail (Phase 4)
 
 **Error Response Format:**
 ```json
