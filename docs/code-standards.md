@@ -16,22 +16,47 @@
 - **Constants:** UPPER_SNAKE_CASE (`API_BASE_URL`)
 - **Types/Interfaces:** PascalCase (`Recipe`, `UserProfile`)
 
-### Structure (Expo SDK 55 + Expo Router v7)
-- **Pages** in `app/` — Expo Router file-based routing
-- **Components** in `components/` — Reusable UI components
-- **Hooks** in `hooks/` — Custom React hooks
-- **Services** in `services/` — API calls and business logic
-- **Types** in `types/` — TypeScript interfaces and types
-- **Assets** in `assets/` — Images, fonts, static files
+### Structure (Feature-Based with Expo Router v7)
+
+**Routes (app/ directory):** Thin 2-line wrappers that import and re-export feature screens. No business logic in route files.
+
+**Feature Modules (features/ directory):** Self-contained features with their own:
+- `components/` — Feature-specific UI components
+- `screens/` — Screen components exported to app/
+- `api/` — Repository pattern (HTTP calls + caching)
+- `hooks/` — Custom hooks (queries, state subscriptions)
+- `store.ts` — Zustand state (UI state only: filters, selections, toggles)
+- `types.ts` — Feature-specific TypeScript interfaces
+- `index.ts` — Barrel export for clean imports
+
+**Shared Utilities (shared/ directory):**
+- `components/` — Cross-feature reusable UI (AnimatedPressable, CategoryChips, RecipeCards)
+- `api/` — HTTP client, QueryClientProvider, MMKV storage
+- `constants/` — Colors, fonts, mock data
+- `types/` — Global type re-exports
+- `hooks/` — (future) Auth, navigation utilities
+
+**State Management:**
+- **UI state** → Zustand stores (filters, visible modals, selected items)
+- **Server state** → TanStack React Query (async data, caching, offline sync)
+- **Local storage** → MMKV (offline recipe caching)
+
+### Feature Module Conventions
+- **Isolation:** Each feature is independent; import shared utilities via `@/shared/*` and other features via relative paths only when necessary
+- **Naming:** Feature folder = kebab-case (e.g., `create-recipe`), screen files end with `-screen.tsx`, component files describe their purpose
+- **Exports:** Each feature has `index.ts` barrel export; route files import via barrel (`import { HomeScreen } from '@/features/home'`)
+- **API Layer:** Implement repository pattern (e.g., `recipes-repository.ts`) for HTTP abstraction; wrap with TanStack Query hooks
+- **State:** UI state in Zustand (local, reset on unmount); server state in TanStack Query (persisted, synced offline)
+- **No circular imports:** Features must not import from each other; share code via `shared/`
 
 ### Conventions
 - Functional components only (no class components)
 - Use TypeScript strict mode (`tsconfig.json`)
 - Prefer `const` over `let`
 - Use named exports for components
-- Expo Router for navigation (no React Navigation setup yet)
+- Expo Router for file-based navigation; routes are thin wrappers
 
-## Java / Spring Boot (3.5.11, Java 21)
+## Java / Spring Boot (4.0.3, Java 21)
 
 ### Naming
 - **Files/Classes:** PascalCase (`RecipeService.java`)
@@ -96,7 +121,7 @@ Follow Conventional Commits:
 ```
 feat(recipes): add search by ingredient
 fix(auth): resolve token refresh race condition
-chore(deps): update Spring Boot to 3.5.11
+chore(deps): update Spring Boot to 4.0.3
 ```
 
 ## API Design
