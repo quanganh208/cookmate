@@ -105,18 +105,59 @@ apps/mobile/
 
 **Stack:** Spring Boot 4.0.3, Java 21 LTS, Spring Data MongoDB, Lombok, Maven
 
-**Architecture (Layered):**
+**Architecture (Feature-Based Modular):**
 
 ```
 com.cookmate/
-├── CookmateApplication.java  Entry point
-├── controller/               HealthController only (pending Phase 3)
-├── service/                  Scaffolded — empty (pending Phase 3)
-├── repository/               Scaffolded — empty (pending Phase 3)
-├── model/                    Scaffolded — empty (pending Phase 3)
-├── dto/                      Scaffolded — empty (pending Phase 3)
-├── config/                   CorsConfig, MongoConfig, OpenApiConfig (implemented)
-└── exception/                Scaffolded — empty (pending Phase 3)
+├── CookmateApplication.java               Entry point
+├── auth/                                   Auth feature module
+│   ├── controller/
+│   │   ├── AuthController.java            Authentication endpoints
+│   │   └── AuthControllerIntegrationTest  Integration tests
+│   ├── service/
+│   │   ├── AuthService.java               User registration, login, token management
+│   │   ├── GoogleOAuthService.java        Google OAuth integration
+│   │   └── AuthServiceTest.java           Service unit tests
+│   ├── repository/
+│   │   ├── UserRepository.java            User queries
+│   │   └── RefreshTokenRepository.java    Refresh token queries with TTL
+│   ├── model/
+│   │   ├── User.java                      User document
+│   │   ├── RefreshToken.java              Refresh token document (auto-cleanup via TTL)
+│   │   ├── Role.java                      User roles enum
+│   │   └── AuthProvider.java              OAuth provider enum (LOCAL, GOOGLE)
+│   ├── dto/
+│   │   ├── AuthResponse.java              Auth response with tokens & user
+│   │   ├── UserResponse.java              User data response
+│   │   ├── LoginRequest.java              Login request
+│   │   ├── RegisterRequest.java           Registration request
+│   │   ├── GoogleAuthRequest.java         Google OAuth request
+│   │   └── RefreshTokenRequest.java       Token refresh request
+│   └── exception/
+│       └── AuthException.java             Authentication-related errors
+├── shared/                                 Shared utilities & config
+│   ├── controller/
+│   │   └── HealthController.java          Health check endpoint
+│   ├── service/                            (Reserved for future cross-feature services)
+│   ├── repository/                         (Reserved for future shared data access)
+│   ├── security/
+│   │   ├── ApiKeyFilter.java              X-API-Key header validation
+│   │   ├── JwtAuthenticationFilter.java   JWT Bearer token validation
+│   │   ├── JwtTokenProvider.java          JWT creation & parsing
+│   │   └── JwtTokenProviderTest.java      JWT unit tests
+│   ├── config/
+│   │   ├── OpenApiConfig.java             Swagger/OpenAPI setup
+│   │   ├── SecurityConfig.java            Spring Security filter chain
+│   │   ├── CommonBeansConfig.java         Shared bean definitions (PasswordEncoder, etc)
+│   │   ├── CorsConfig.java                CORS configuration
+│   │   └── MongoConfig.java               MongoDB connection settings
+│   ├── exception/
+│   │   ├── GlobalExceptionHandler.java    Centralized error handling
+│   │   └── ResourceNotFoundException.java 404 handling
+│   └── dto/
+│       └── ApiResponse.java               Unified API response envelope
+└── test/
+    └── CookmateApplicationTests            Root application tests
 ```
 
 **Key Entry Point:** `backend/src/main/java/com/cookmate/CookmateApplication.java`
@@ -124,21 +165,47 @@ com.cookmate/
 **Profiles:** `dev` (local, MongoDB @ localhost:27017), `prod` (env vars)
 **Database Driver:** MongoDB Java Driver via Spring Data MongoDB
 
+**Authentication:**
+
+- **API Key:** X-API-Key header validation (ApiKeyFilter)
+- **JWT:** Bearer token validation (JwtAuthFilter)
+- **Password Hashing:** BCrypt with strength 12
+- **Token Lifecycle:**
+  - Access Token: 15 minutes
+  - Refresh Token: 30 days (stored in MongoDB with TTL auto-cleanup)
+- **OAuth:** Google OAuth2 integration (GoogleOAuthService)
+
+**Endpoints Implemented:**
+
+- `GET /api/health` — Health check
+- `POST /api/auth/register` — User registration (email, password, name)
+- `POST /api/auth/login` — Email/password login
+- `POST /api/auth/google` — Google OAuth login
+- `POST /api/auth/refresh` — Token refresh (refresh token rotation)
+- `GET /api/auth/me` — Current user profile (JWT required)
+- `POST /api/auth/logout` — Logout (revokes refresh token)
+
 ## Database (MongoDB 8.0)
 
-**Collections (planned):**
+**Collections:**
 
-- `users` — User accounts, profiles, credentials
-- `recipes` — Recipe documents, ingredients, steps
-- `follows` — User follow relationships
-- `likes` — Like/bookmark mappings
-- `comments` — Comments on recipes
-- `ratings` — Recipe ratings
+- `users` — User accounts with credentials, OAuth providers
+- `refreshTokens` — Active refresh tokens with TTL auto-cleanup (30-day expiry)
+- `recipes` — Recipe documents (planned Phase 4)
+- `follows` — User follow relationships (planned Phase 5)
+- `likes` — Like/bookmark mappings (planned Phase 5)
+- `comments` — Comments on recipes (planned Phase 5)
+- `ratings` — Recipe ratings (planned Phase 5)
 
 **Connection:**
 
 - Local: `mongodb://mongodb:27017/cookmate` (Docker)
 - Production: `MONGODB_URI` environment variable
+
+**Indexes:**
+
+- `users.email` — Unique constraint
+- `refreshTokens.expireAt` — TTL index for auto-cleanup
 
 ## Infrastructure
 
@@ -159,7 +226,7 @@ com.cookmate/
 - `.github/workflows/backend-ci.yml` — Run Maven tests, checkstyle, build JAR
 
 **Triggers:** On PR creation, push to main
-**Status:** Basic pipeline; TODO add deployment steps
+**Status:** Testing, linting, Docker builds configured; deployment pending
 
 ## Key Dependencies
 
@@ -185,34 +252,73 @@ com.cookmate/
 
 - `spring-boot-starter-web` — REST framework
 - `spring-boot-starter-data-mongodb` — MongoDB access
+- `spring-boot-starter-security` — Authentication & authorization
 - `org.projectlombok:lombok` — Boilerplate reduction
 - `spring-boot-starter-validation` — @Valid annotations
 - `spring-boot-devtools` — Hot reload
+- `io.jsonwebtoken:jjwt` — JWT creation & validation
+- `com.google.auth:google-auth-library-oauth2-http` — Google OAuth
 
 ## API Contracts
 
 **Base URL:** `http://localhost:8080/api` (dev), `https://api.cookmate.com` (prod)
 
+**Authentication Headers:**
+
+- `X-API-Key: {api-key}` — Optional API key validation
+- `Authorization: Bearer {jwt}` — JWT token for protected endpoints
+
 **Implemented Endpoints:**
 
 - `GET /api/health` — Health check (`{"status": "ok"}`)
+- `POST /api/auth/register` — Register user (Phase 3)
+- `POST /api/auth/login` — Login (Phase 3)
+- `POST /api/auth/google` — Google OAuth (Phase 3)
+- `POST /api/auth/refresh` — Refresh token (Phase 3)
+- `GET /api/auth/me` — Current user (Phase 3)
+- `POST /api/auth/logout` — Logout (Phase 3)
 
-**Planned Endpoints (Phase 3+):**
+**Planned Endpoints (Phase 4+):**
 
-- `POST /auth/register` — User registration (Phase 3)
-- `POST /auth/login` — Login, JWT token (Phase 3)
-- `GET /users/{id}` — User profile (Phase 3)
 - `GET /recipes` — List recipes, paginated (Phase 4)
 - `POST /recipes` — Create recipe (Phase 4)
 - `GET /recipes/{id}` — Recipe detail (Phase 4)
 
-**Error Response Format:**
+**Response Format (Unified ApiResponse Envelope):**
+
+Success response:
 
 ```json
 {
-  "error": "NOT_FOUND",
-  "message": "Recipe with ID 123 not found",
-  "timestamp": "2026-03-06T10:30:45Z"
+  "success": true,
+  "data": { "id": "123", "name": "Pasta Carbonara" },
+  "timestamp": "2026-03-24T12:00:00Z"
+}
+```
+
+Error response:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Recipe with ID 123 not found"
+  },
+  "timestamp": "2026-03-24T12:00:00Z"
+}
+```
+
+Authentication errors use same format:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_CREDENTIALS",
+    "message": "Email or password incorrect"
+  },
+  "timestamp": "2026-03-24T12:00:00Z"
 }
 ```
 
@@ -221,7 +327,7 @@ com.cookmate/
 1. **Clone & Setup:** `git clone`, `pnpm install`, `docker compose up`
 2. **Mobile Dev:** `cd apps/mobile && pnpm start` (Expo Go or emulator)
 3. **Backend Dev:** `cd backend && ./mvnw spring-boot:run` (dev profile)
-4. **API Testing:** Use Postman, curl, or REST Client
+4. **API Testing:** Use Postman, curl, or REST Client with auth headers
 5. **Git:** Create feature branches, make PR, ensure CI passes
 
 ## Standards References

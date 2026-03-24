@@ -1,5 +1,6 @@
-package com.cookmate.controller;
+package com.cookmate.shared.controller;
 
+import com.cookmate.shared.dto.ApiResponse;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthController {
 
     @GetMapping("/health")
-    public ResponseEntity<Map<String, String>> health() {
-        return ResponseEntity.ok(Map.of("status", "ok"));
+    public ResponseEntity<ApiResponse<Map<String, String>>> health() {
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("status", "ok")));
     }
 }

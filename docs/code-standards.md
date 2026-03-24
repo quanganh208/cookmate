@@ -81,6 +81,7 @@ com.cookmate/
 ├── model/            # @Document — MongoDB entities
 ├── dto/              # Request/Response DTOs
 ├── config/           # @Configuration — Spring beans
+├── security/         # Authentication & authorization filters
 └── exception/        # @ControllerAdvice — error handlers
 ```
 
@@ -91,6 +92,113 @@ com.cookmate/
 - Return `ResponseEntity<>` from controllers
 - Use Spring profiles (`dev`, `prod`) for environment-specific config
 - Enable Spring Data MongoDB with `spring-boot-starter-data-mongodb`
+
+## Security Conventions
+
+### Authentication
+
+**API Key (First-Pass Filter):**
+
+- Header: `X-API-Key: {api-key}`
+- Validated by `ApiKeyFilter` before JWT processing
+- Use for service-to-service or legacy client authentication
+- Configure allowed keys in environment (`ALLOWED_API_KEYS`)
+
+**JWT (Bearer Token):**
+
+- Header: `Authorization: Bearer {jwt}`
+- Validated by `JwtAuthFilter`
+- Claims include: `userId`, `email`, `roles`, `iat`, `exp`
+- Access Token: 15-minute TTL
+- Refresh Token: 30-day TTL (stored in MongoDB with auto-cleanup via TTL index)
+
+**Password Storage:**
+
+- Use BCrypt with strength 12: `BCryptPasswordEncoder` bean with `strength(12)`
+- Never store plaintext passwords
+- Hash during user registration and updates
+
+**OAuth Integration (Google):**
+
+- Use `GoogleOAuthService` for token verification
+- Provider enum: `AuthProvider.GOOGLE` or `AuthProvider.LOCAL`
+- Automatic user creation on first OAuth login
+- Match existing users by email
+
+### Authorization
+
+**Role-Based Access Control (RBAC):**
+
+- Define roles in `Role` enum (USER, ADMIN, MODERATOR)
+- Use `@PreAuthorize("hasRole('USER')")` on protected endpoints
+- Default role for new users: `Role.USER`
+
+**Protected Endpoints:**
+
+- Mark with `@PreAuthorize` or check in service layer
+- Always validate JWT via `JwtAuthFilter`
+- Return 401 Unauthorized if missing/invalid token
+- Return 403 Forbidden if insufficient permissions
+
+### Exception Handling
+
+**Custom Exceptions:**
+
+- `AuthException` — Authentication failures (invalid credentials, token expired)
+- `ResourceNotFoundException` — 404 when resource doesn't exist
+- Extend `RuntimeException` for unchecked exceptions
+
+**Global Error Handler:**
+
+- Use `@ControllerAdvice` + `@ExceptionHandler` in `GlobalExceptionHandler`
+- Return standardized `ApiResponse` envelope with success flag, data/error, timestamp
+- Never expose stack traces in error responses
+- Log exceptions at appropriate levels (WARN for expected, ERROR for unexpected)
+
+### Data Protection
+
+**Sensitive Fields:**
+
+- Never log passwords, tokens, API keys
+- Exclude from response DTOs: password hash, refresh tokens
+- Use DTOs to explicitly whitelist response fields
+
+**Environment Configuration:**
+
+- Store JWT secret in `application.properties` (injected from env vars)
+- Store API keys in environment variables, not code
+- Use Spring profiles to manage secrets per environment
+
+### Common Patterns
+
+**Token Validation:**
+
+```java
+// In JwtAuthFilter
+String token = extractToken(request);
+if (jwtProvider.validateToken(token)) {
+    Claims claims = jwtProvider.getClaims(token);
+    // Set authentication in SecurityContext
+}
+```
+
+**Password Hashing:**
+
+```java
+// In AuthService
+String hashedPassword = passwordEncoder.encode(plainPassword);
+user.setPassword(hashedPassword);
+```
+
+**Protected Endpoint:**
+
+```java
+@PostMapping("/api/auth/me")
+@PreAuthorize("hasRole('USER')")
+public ResponseEntity<UserResponse> getCurrentUser() {
+    // JwtAuthFilter ensures user is authenticated
+}
+```
 
 ## Build Tools & Package Management
 
@@ -143,13 +251,27 @@ chore(deps): update Spring Boot to 4.0.3
 
 - RESTful endpoints under `/api/`
 - Use plural nouns: `/api/recipes`, `/api/users`
-- HTTP status codes: 200 (OK), 201 (Created), 400 (Bad Request), 404 (Not Found), 500 (Server Error)
-- Consistent error response format:
+- HTTP status codes: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 404 (Not Found), 500 (Server Error)
+- Consistent response format using `ApiResponse<T>` envelope:
 
 ```json
+// Success
 {
-  "error": "NOT_FOUND",
-  "message": "Recipe not found",
+  "success": true,
+  "data": { "id": "123", "name": "Recipe" },
+  "timestamp": "2026-03-06T09:00:00Z"
+}
+
+// Error
+{
+  "success": false,
+  "error": { "code": "NOT_FOUND", "message": "Recipe not found" },
   "timestamp": "2026-03-06T09:00:00Z"
 }
 ```
+
+**Auth Endpoints (Special Cases):**
+
+- 401 Unauthorized: Invalid/expired credentials or missing token
+- 403 Forbidden: Valid token but insufficient permissions
+- 400 Bad Request: Invalid email format, password too weak, etc.

@@ -12,6 +12,16 @@ springdoc:
   swagger-ui:
     path: /
 
+app:
+  auth:
+    api-key: ${API_KEY:dev-api-key-change-in-production}
+    jwt:
+      secret: ${JWT_SECRET:dev-jwt-secret-must-be-at-least-64-characters-long-for-hmac-sha512-signing}
+      access-token-expiration: 900000
+      refresh-token-expiration: 2592000000
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
+
 management:
   endpoints:
     web:

@@ -1,4 +1,4 @@
-package com.cookmate.config;
+package com.cookmate.shared.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

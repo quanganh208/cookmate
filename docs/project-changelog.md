@@ -8,10 +8,162 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Planned
 
-- Phase 2: User authentication and profile management
-- Phase 3: Recipe CRUD and social features
-- Phase 4: Advanced social features (followers, ratings)
-- Phase 5: AI-powered recipe suggestions
+- Phase 3.5: Mobile authentication UI (login/register screens, token persistence)
+- Phase 4: Recipe CRUD and search features
+- Phase 5: Social features (followers, ratings, comments)
+- Phase 6: AI-powered recipe suggestions
+
+## [0.2.2] — 2026-03-24
+
+### Changed (API Response Format Standardization)
+
+**Unified Response Envelope:**
+
+- **New unified wrapper:** `ApiResponse<T>` generic class for all responses (success & error)
+  - Success: `{ "success": true, "data": {...}, "timestamp": "..." }`
+  - Error: `{ "success": false, "error": { "code": "...", "message": "..." }, "timestamp": "..." }`
+- **Removed:** Old `ErrorResponse` class (replaced by `ApiResponse.ErrorDetail`)
+- **Static factory methods:** `ApiResponse.ok(data)`, `ApiResponse.ok()`, `ApiResponse.error(code, msg)`
+- **Updated endpoints:** All 7 endpoints now return wrapped responses
+  - Auth: register, login, google, refresh, me, logout (6 endpoints)
+  - Health: status (1 endpoint)
+- **Logout status change:** Changed from 204 No Content to 200 OK with `{ "success": true, data: null }`
+- **Manual wrapping strategy:** Controllers wrap at response layer (no `ResponseBodyAdvice` — YAGNI)
+- **GlobalExceptionHandler updated:** All 6 exception handlers return `ApiResponse` envelope
+
+### Verified
+
+- All 44 unit & integration tests passing
+- Response format consistent across all endpoints
+- Error responses include code and message in standardized structure
+- No frontend breaking changes (was already returning multiple formats)
+
+### Why Unified Envelope?
+
+- **Predictable:** Frontend always knows response shape
+- **Extensible:** Timestamp, additional metadata easy to add
+- **Type-safe:** Generic `<T>` for compile-time type checking
+- **Backward compatible:** Success data still at root `data` field; error structure clarified
+
+## [0.2.1] — 2026-03-24
+
+### Changed (Backend Refactor)
+
+**Feature-Based Modularization:**
+
+- **Refactored package structure** from flat layered to feature-based modules:
+  - `com.cookmate.auth.*` — Authentication feature (controller, service, repository, model, dto, exception)
+  - `com.cookmate.shared.*` — Cross-feature utilities (security, config, exception, dto, controller)
+  - Single-responsibility packages enable parallel team development
+- **File moves:** 29 source files + 4 test files relocated to new package structure
+  - 16 auth-specific files → `com.cookmate.auth/` (with 2 test files)
+  - 12 shared files + 1 health controller → `com.cookmate.shared/` (with 1 test file)
+  - Root application tests remain at `com.cookmate/` root
+- **Package updates:** Updated 47 package declarations across all source files
+- **Import updates:** Fixed 200+ cross-module imports after refactoring
+- **Import ordering:** Applied spotless:apply for Google Java Format compliance
+
+### Verified
+
+- All 44 unit & integration tests passing (JwtTokenProviderTest: 15, AuthServiceTest: 15, AuthControllerIntegrationTest: 13, CookmateApplicationTests: 1)
+- Build successful with `./mvnw verify`
+- Checkstyle compliance verified
+- Zero compilation errors; no logic changes, only structural reorganization
+- Spring component scanning works correctly with new package hierarchy
+
+### Why Feature-Based?
+
+- **Scalability:** Clearer responsibility boundaries enable 3-4 developers working independently
+- **Maintainability:** Feature modules self-contained; future features (recipes, social) easier to add
+- **Onboarding:** New team members understand which files belong to which feature
+- **Testing:** Feature tests co-located with feature code; easier to find test coverage
+
+## [0.2.0] — 2026-03-24
+
+### Added (Authentication & Security)
+
+**Backend Authentication:**
+
+- Two-tier authentication system:
+  - **API Key Filter** (`ApiKeyFilter.java`) — Validates X-API-Key header for service-to-service auth
+  - **JWT Filter** (`JwtAuthFilter.java`) — Validates Bearer tokens from mobile clients
+- User authentication endpoints:
+  - `POST /api/auth/register` — User registration with email & password
+  - `POST /api/auth/login` — Login with email/password, returns JWT + refresh token
+  - `POST /api/auth/google` — Google OAuth2 login (GoogleOAuthService)
+  - `POST /api/auth/refresh` — Refresh access token (rotation support)
+  - `GET /api/auth/me` — Get current user profile (JWT required)
+  - `POST /api/auth/logout` — Logout with refresh token revocation
+- Domain models:
+  - `User.java` — User document with email, password hash, OAuth provider, roles
+  - `RefreshToken.java` — Refresh token with TTL auto-cleanup (30-day expiry)
+  - `Role.java` — Enum: USER, ADMIN
+  - `AuthProvider.java` — Enum: LOCAL, GOOGLE
+- DTOs for request/response:
+  - `AuthResponse` — Returns accessToken, refreshToken, user
+  - `UserResponse` — User profile (id, email, name, role)
+  - `LoginRequest`, `RegisterRequest`, `GoogleAuthRequest`, `RefreshTokenRequest`
+  - `ErrorResponse` — Standardized error format
+- Security infrastructure:
+  - `SecurityConfig.java` — Spring Security bean setup, filter chain order
+  - `CommonBeansConfig.java` — PasswordEncoder (BCrypt strength 12), JWT provider beans
+  - Global exception handler (`GlobalExceptionHandler.java`) with custom exceptions
+  - `AuthException`, `ResourceNotFoundException` for domain errors
+- Authentication features:
+  - BCrypt password hashing (strength 12)
+  - JWT with 15-minute access token TTL
+  - Refresh tokens with 30-day TTL, stored in MongoDB
+  - Automatic refresh token cleanup via MongoDB TTL index
+  - Google OAuth2 token verification
+  - Automatic user creation on first OAuth login
+  - User role-based access control (RBAC)
+
+**Backend Repositories & Services:**
+
+- `UserRepository` — Spring Data MongoDB user queries (findByEmail, etc.)
+- `RefreshTokenRepository` — Manage refresh token persistence
+- `AuthService` — Orchestrates registration, login, token refresh, logout
+- `GoogleOAuthService` — Verifies Google ID tokens, creates/matches users
+
+**Configuration:**
+
+- Updated `pom.xml` with Spring Security and JWT dependencies
+- Spring profile-specific configs (dev, prod)
+- OpenAPI/Swagger integration for auth endpoints
+
+**Documentation:**
+
+- Updated `system-architecture.md` — Added security layer, auth flow, filter chain
+- Updated `codebase-summary.md` — Added auth endpoints, packages, models
+- Updated `code-standards.md` — Added security conventions (API key, JWT, OAuth, RBAC)
+- Updated `development-roadmap.md` — Marked Phase 3 complete, set M3 milestone
+- Added changelog entry
+
+### Changed
+
+- `backend/pom.xml` — Added spring-boot-starter-security, jjwt, google-auth-library-oauth2-http
+- `backend/src/main/resources/application.yml` — JWT secret, API key config (env vars)
+- `backend/src/main/resources/application-dev.yml` — Dev-specific JWT/API key values
+- `backend/src/main/java/com/cookmate/config/OpenApiConfig.java` — Updated for auth endpoints
+- `CookmateApplication.java` — Entry point with security enabled
+
+### Security
+
+- Password hashing with BCrypt strength 12 (not 10)
+- JWT token expiration (15 min access, 30 day refresh)
+- API Key validation before JWT processing
+- Google OAuth2 token verification
+- Protected endpoints require `@PreAuthorize` or JWT validation
+- Error responses never expose stack traces
+- Refresh tokens excluded from API responses
+- MongoDB TTL index on RefreshToken for auto-cleanup
+
+### Known Issues
+
+- Mobile authentication UI not yet implemented (Phase 3.5)
+- JWT secret must be rotated in production
+- Google OAuth requires production credentials setup
+- Refresh token rotation strategy to be finalized in Phase 3.5
 
 ## [0.1.1] — 2026-03-06
 
@@ -143,13 +295,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Version History
 
-| Version | Release Date | Phase          | Highlights                                                |
-| ------- | ------------ | -------------- | --------------------------------------------------------- |
-| 0.1.0   | 2026-03-06   | Foundation     | Monorepo, mobile + backend scaffolds, Docker dev env      |
-| 0.1.1   | 2026-03-06   | CI Integration | Jest tests, Checkstyle, Docker build, multi-stage caching |
-| 0.2.0   | TBD          | Auth           | User registration, JWT, profile management                |
-| 0.3.0   | TBD          | Recipes        | Recipe CRUD, search, ingredients, images                  |
-| 1.0.0   | TBD          | Release        | Full feature set, production ready                        |
+| Version | Release Date | Phase          | Highlights                                                  |
+| ------- | ------------ | -------------- | ----------------------------------------------------------- |
+| 0.1.0   | 2026-03-06   | Foundation     | Monorepo, mobile + backend scaffolds, Docker dev env        |
+| 0.1.1   | 2026-03-06   | CI Integration | Jest tests, Checkstyle, Docker build, multi-stage caching   |
+| 0.2.0   | 2026-03-24   | Auth           | User registration, JWT + refresh tokens, Google OAuth, RBAC |
+| 0.3.0   | TBD          | Recipes        | Recipe CRUD, search, ingredients, images                    |
+| 1.0.0   | TBD          | Release        | Full feature set, production ready                          |
 
 ## Notes for Contributors
 

@@ -5,26 +5,54 @@
 Cookmate uses a monorepo with two main applications:
 
 - **Mobile**: React Native Expo (SDK 55) with feature-based modular architecture, TanStack Query for offline-first caching, Zustand for UI state
-- **Backend**: Spring Boot 4.0.3 REST API (Java 21) with Spring Data MongoDB
+- **Backend**: Spring Boot 4.0.3 REST API (Java 21) with Spring Data MongoDB, JWT & API Key authentication
 - **Database**: MongoDB 8.0 (containerized)
 
 ## Architecture Diagram
 
 ```
-┌──────────────────┐       HTTP/REST       ┌──────────────────┐
-│                  │  ──────────────────>   │                  │
-│  Expo Mobile App │                        │  Spring Boot API │
-│  (React Native)  │  <──────────────────   │  (Java 21)       │
-│                  │       JSON             │                  │
-└──────────────────┘                        └────────┬─────────┘
+┌──────────────────┐       HTTP/REST       ┌──────────────────────┐
+│                  │  ──────────────────>   │                      │
+│  Expo Mobile App │                        │  Spring Boot API     │
+│  (React Native)  │  <──────────────────   │  (Java 21)           │
+│                  │       JSON             │                      │
+└──────────────────┘                        └────────┬─────────────┘
                                                      │
-                                                     │ MongoDB Driver
-                                                     │
-                                            ┌────────▼─────────┐
-                                            │                  │
-                                            │    MongoDB 8.0   │
-                                            │                  │
-                                            └──────────────────┘
+                                    ┌────────────────┼────────────────┐
+                                    │                                 │
+                                    ▼                                 ▼
+                           ┌─────────────────────┐        ┌──────────────────┐
+                           │                     │        │                  │
+                           │  API Key Filter     │        │   JWT Auth       │
+                           │  (X-API-Key header) │        │   (Bearer token) │
+                           │                     │        │                  │
+                           └─────────────────────┘        └──────────────────┘
+                                    │
+                                    ▼
+                           ┌──────────────────┐
+                           │   Controllers    │
+                           │   (REST routes)  │
+                           └────────┬─────────┘
+                                    │
+                                    ▼
+                           ┌──────────────────┐
+                           │   Services       │
+                           │   (Business      │
+                           │    logic)        │
+                           └────────┬─────────┘
+                                    │
+                                    ▼
+                           ┌──────────────────┐
+                           │  Repositories    │
+                           │  (Data access)   │
+                           └────────┬─────────┘
+                                    │
+                                    ▼
+                           ┌──────────────────┐
+                           │                  │
+                           │    MongoDB 8.0   │
+                           │                  │
+                           └──────────────────┘
 ```
 
 ## Mobile Architecture (Feature-Based)
@@ -95,32 +123,131 @@ cookmate/
 └── README.md                → Project documentation
 ```
 
-## Backend Architecture (Layered)
+## Backend Architecture (Feature-Based Modular)
+
+**Design:** Decomposed from flat layered architecture into two feature modules + shared utilities.
 
 ```
-Controller → Service → Repository → MongoDB
-     ↓           ↓
-    DTO        Model
+Request → Shared Security Filters → Feature Controllers → Services → Repositories → MongoDB
+              ↓
+        (Auth Filter, JWT Filter)
 ```
 
-**Current Status:** Foundation scaffolded. Only `HealthController` (`GET /api/health`) and configs (CORS, MongoDB auditing, OpenAPI) are implemented. Service, Repository, Model, DTO, and Exception layers are directory placeholders pending Phase 3 (Authentication).
+**Module Structure:**
 
-- **Controller** — REST endpoints, request validation (`HealthController` implemented)
-- **Service** — Business logic, orchestration (pending Phase 3)
-- **Repository** — Data access via Spring Data MongoDB (pending Phase 3)
-- **Model** — Domain entities with MongoDB annotations (pending Phase 3)
-- **DTO** — Request/response data transfer objects (pending Phase 3)
-- **Config** — CORS, MongoDB auditing, OpenAPI (implemented)
-- **Exception** — Custom exception handlers (pending Phase 3)
+### Auth Feature (`com.cookmate.auth.*`)
+
+Encapsulates all authentication logic:
+
+- **controller/** — REST endpoints (register, login, google, refresh, me, logout)
+- **service/** — Business logic (AuthService, GoogleOAuthService)
+- **repository/** — Data access (UserRepository, RefreshTokenRepository)
+- **model/** — Domain entities (User, RefreshToken, Role, AuthProvider)
+- **dto/** — Request/response objects
+- **exception/** — AuthException for auth-specific errors
+
+### Shared Module (`com.cookmate.shared.*`)
+
+Cross-feature utilities and infrastructure:
+
+- **security/** — Authentication filters (ApiKeyFilter, JwtAuthenticationFilter, JwtTokenProvider)
+- **config/** — Spring configuration (SecurityConfig, OpenApiConfig, CommonBeansConfig, CorsConfig, MongoConfig)
+- **controller/** — Shared endpoints (HealthController)
+- **exception/** — Global error handling (GlobalExceptionHandler, ResourceNotFoundException)
+- **dto/** — Shared response objects (ApiResponse with unified envelope format)
+
+**Filter Chain (Request Flow):**
+
+1. **ApiKeyFilter** - Validates X-API-Key header (service-to-service auth)
+2. **JwtAuthenticationFilter** - Validates JWT Bearer token (client auth, 15min TTL)
+3. **Feature Controllers** - Route to appropriate feature endpoint
+4. **Feature Services** - Execute business logic
+5. **Feature Repositories** - Access MongoDB data
+
+**Current Status:** Foundation + Authentication Phase complete. All 29 source + 4 test files migrated. 44/44 tests passing. Ready for scalable team development.
+
+## Authentication Flow
+
+**Registration (POST /api/auth/register):**
+
+```
+Client sends: { email, password, name }
+  ↓
+AuthService.register() validates & hashes password (BCrypt strength 12)
+  ↓
+User saved to MongoDB
+  ↓
+Response: { accessToken (JWT), refreshToken, user: { id, email, name } }
+```
+
+**Login (POST /api/auth/login):**
+
+```
+Client sends: { email, password }
+  ↓
+AuthService.login() validates credentials
+  ↓
+JWT (15min) + Refresh Token (30 days, stored in MongoDB with TTL auto-cleanup)
+  ↓
+Response: { accessToken, refreshToken, user }
+```
+
+**Google OAuth (POST /api/auth/google):**
+
+```
+Client sends: { idToken from Google }
+  ↓
+GoogleOAuthService verifies token with Google
+  ↓
+User created or matched (AuthProvider: GOOGLE)
+  ↓
+JWT + Refresh Token issued
+  ↓
+Response: { accessToken, refreshToken, user }
+```
+
+**Token Refresh (POST /api/auth/refresh):**
+
+```
+Client sends: { refreshToken }
+  ↓
+AuthService validates refresh token TTL in MongoDB
+  ↓
+New accessToken (15min) issued; refresh token may be rotated
+  ↓
+Response: { accessToken, refreshToken }
+```
+
+**Protected Endpoints:**
+
+```
+GET /api/auth/me (Bearer JWT)
+  ↓
+JwtAuthFilter extracts claims
+  ↓
+Returns: { user: { id, email, name, role } }
+```
+
+**Logout (POST /api/auth/logout):**
+
+```
+Client sends: { refreshToken }
+  ↓
+AuthService removes refresh token from MongoDB
+  ↓
+Response: { success: true }
+```
 
 ## Data Flow
 
-1. Mobile app sends HTTP request to `/api/*`
-2. CorsConfig allows cross-origin from dev ports
-3. Controller validates input, delegates to Service
-4. Service executes business logic
-5. Repository queries MongoDB
-6. Response serialized as JSON back to mobile
+1. Mobile app sends HTTP request to `/api/*` with optional `X-API-Key` header and/or `Authorization: Bearer {jwt}`
+2. ApiKeyFilter checks API key (if required endpoint)
+3. JwtAuthFilter extracts and validates JWT claims
+4. Controller validates input, delegates to Service
+5. Service executes business logic
+6. Repository queries MongoDB
+7. Response serialized as JSON back to mobile
+8. Refresh tokens auto-cleanup via MongoDB TTL index
 
 ## Environment Profiles
 
