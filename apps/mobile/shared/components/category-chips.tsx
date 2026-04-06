@@ -19,6 +19,7 @@ export function CategoryChips({ categories, selected, onSelect }: CategoryChipsP
         data={categories}
         keyExtractor={(item) => item}
         showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => {
           const isActive = item === selected;
           return (
@@ -43,6 +44,8 @@ const styles = StyleSheet.create({
   wrapper: {
     height: 44,
     marginBottom: 16,
+  },
+  listContent: {
     paddingHorizontal: 16,
   },
   chip: {

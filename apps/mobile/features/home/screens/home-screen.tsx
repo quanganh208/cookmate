@@ -50,20 +50,20 @@ export function HomeScreen() {
         <HomeHeader />
         <SearchBarShortcut />
 
+        <FeaturedCarousel recipes={featuredRecipes} onRecipePress={handleRecipePress} />
+
+        <TrendingSection recipes={trendingRecipes} onRecipePress={handleRecipePress} />
+
+        {/* Recent Recipes — filtered by category chips */}
+        <View style={styles.recentHeader}>
+          <Text style={styles.sectionTitle}>Recent Recipes</Text>
+        </View>
+
         <CategoryChips
           categories={CATEGORIES}
           selected={selectedCategory}
           onSelect={setSelectedCategory}
         />
-
-        <FeaturedCarousel recipes={featuredRecipes} onRecipePress={handleRecipePress} />
-
-        <TrendingSection recipes={trendingRecipes} onRecipePress={handleRecipePress} />
-
-        {/* Recent Recipes — mixed layout */}
-        <View style={styles.recentHeader}>
-          <Text style={styles.sectionTitle}>Recent Recipes</Text>
-        </View>
 
         {recentRecipes.length === 0 ? (
           <Text style={styles.emptyText}>No recipes in this category</Text>
