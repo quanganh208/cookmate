@@ -12,6 +12,7 @@ const REFRESH_SKIP_ENDPOINTS = new Set([
   '/auth/login',
   '/auth/register',
   '/auth/google',
+  '/auth/logout',
   '/auth/forgot-password',
   '/auth/reset-password',
 ]);

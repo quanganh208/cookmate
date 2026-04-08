@@ -17,10 +17,6 @@ interface MessagePayload {
  * HTTP client for the backend `/api/auth/*` endpoints. Each method unwraps the envelope via
  * `apiClient` and returns the data payload directly. Error responses are surfaced as `ApiError`
  * with a semantic code that the screen-level error mapper turns into a localised message.
- *
- * Phase 2 only wires the methods needed for bootstrap + logout. Login/register/google/forgot/
- * reset are filled in by later phases — the signatures are already final so consumers can type
- * against them.
  */
 export const authRepository = {
   /** Current authenticated user. Requires a valid access token header. */
@@ -44,7 +40,7 @@ export const authRepository = {
     });
   },
 
-  /** Filled in by phase 3. */
+  /** Email + password login. */
   login(credentials: LoginCredentials): Promise<AuthResponsePayload> {
     return apiClient<AuthResponsePayload>('/auth/login', {
       method: 'POST',
@@ -52,7 +48,7 @@ export const authRepository = {
     });
   },
 
-  /** Filled in by phase 3. */
+  /** Create a new LOCAL user and auto-login. */
   register(credentials: RegisterCredentials): Promise<AuthResponsePayload> {
     return apiClient<AuthResponsePayload>('/auth/register', {
       method: 'POST',
@@ -60,7 +56,7 @@ export const authRepository = {
     });
   },
 
-  /** Filled in by phase 4. */
+  /** Exchange a Google ID token for a Cookmate session. */
   googleAuth(credentials: GoogleCredentials): Promise<AuthResponsePayload> {
     return apiClient<AuthResponsePayload>('/auth/google', {
       method: 'POST',
@@ -68,7 +64,7 @@ export const authRepository = {
     });
   },
 
-  /** Filled in by phase 5. */
+  /** Request a password reset email. Backend always returns a generic success message. */
   forgotPassword(payload: ForgotPasswordPayload): Promise<MessagePayload> {
     return apiClient<MessagePayload>('/auth/forgot-password', {
       method: 'POST',
@@ -76,7 +72,7 @@ export const authRepository = {
     });
   },
 
-  /** Filled in by phase 5. */
+  /** Apply a new password using a token delivered by email. */
   resetPassword(payload: ResetPasswordPayload): Promise<MessagePayload> {
     return apiClient<MessagePayload>('/auth/reset-password', {
       method: 'POST',

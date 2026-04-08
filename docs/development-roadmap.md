@@ -95,7 +95,7 @@
 - Root layout bootstrap: hydrate session from SecureStore, call /auth/me, gate render on completion
 - Feature gating: Favorites/Create screens + Profile login prompt
 - Deep link support: `cookmate://reset?token=xxx` route handling
-- Error mapper: backend error codes → Vietnamese user messages
+- Error mapper: backend error codes → English user messages
 - 18/18 mobile tests passing; 61/61 backend tests passing
 
 ### Phase 4: Recipes

@@ -277,8 +277,8 @@ Response: { success: true, message: "Password updated" }
 **Refresh Token (30 days, stored in MongoDB):**
 
 - Created on login/register/refresh
-- Stored ONLY in SecureStore (Keychain on iOS, Keystore on Android) — never in memory
-- Never sent in HTTP request body (except in refresh endpoint)
+- Stored ONLY in SecureStore (Keychain on iOS, Keystore on Android) — never in the in-memory Zustand store
+- Sent in the HTTP request body only for `POST /api/auth/refresh` and `POST /api/auth/logout`
 - Rotated on every refresh call (new token issued, old one invalidated)
 - Auto-cleaned up by MongoDB TTL index after 30-day expiry
 - Revoked immediately on: logout, password reset, manual revocation
@@ -297,12 +297,14 @@ Response: { success: true, message: "Password updated" }
 **Cold Start (app launch):**
 
 1. Root layout (\_layout.tsx) renders with `status: 'bootstrapping'`
-2. useEffect: read refreshToken from SecureStore (fail-open)
-3. If token exists: call `GET /api/auth/me` with it
-4. If 200: hydrate Zustand auth store (session + status: 'authenticated')
-5. If 401: clear store (status: 'anonymous')
-6. If network error: fail-open (status: 'anonymous', user can still browse)
-7. Render actual app only after bootstrap completes (guard on status !== 'bootstrapping')
+2. useEffect reads **both** access + refresh tokens from SecureStore (fail-open on read errors)
+3. If either is missing → flip to `anonymous` and stop
+4. Prime the Zustand store with the access token so the api-client interceptor can inject the `Authorization: Bearer` header
+5. Call `GET /api/auth/me` using the **access token** (not the refresh token); if it expires, the single-flight 401 interceptor will call `/auth/refresh` and retry once
+6. If 200: hydrate Zustand auth store (session + status: 'authenticated')
+7. If hard auth failure (401/403 after refresh also failed, or `INVALID_TOKEN`): clear SecureStore + store (status: 'anonymous')
+8. If transient failure (offline, 5xx, network error): **keep** SecureStore intact and flip to `anonymous` so the splash dismisses; the next authenticated request retries the refresh flow
+9. Render actual app only after bootstrap completes (guard on `status !== 'bootstrapping'`)
 
 **Protected Request with 401 Response:**
 

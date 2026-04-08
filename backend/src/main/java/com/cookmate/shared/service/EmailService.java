@@ -66,6 +66,10 @@ public class EmailService {
     /** Inline HTML template. Kept tiny and dependency-free on purpose (YAGNI). */
     private String buildResetEmailHtml(String displayName, String resetLink) {
         String safeName = displayName == null || displayName.isBlank() ? "there" : displayName;
+        // The reset link is built from config (base URL) + a server-generated token, but the
+        // base URL is operator-controlled; escape defensively so a misconfigured URL containing
+        // quotes or angle brackets can't break the HTML markup or bleed into adjacent tags.
+        String safeLink = escapeHtml(resetLink);
         return "<!DOCTYPE html><html><body style=\"font-family: Arial, sans-serif; color:"
                 + " #333;\">"
                 + "<h2 style=\"color:#FF7A3D;\">Cookmate</h2>"
@@ -75,12 +79,12 @@ public class EmailService {
                 + "<p>We received a request to reset the password for your account. "
                 + "Tap the button below to continue:</p>"
                 + "<p><a href=\""
-                + resetLink
+                + safeLink
                 + "\" style=\"display:inline-block;padding:12px 24px;"
                 + "background:#FF7A3D;color:#fff;text-decoration:none;border-radius:6px;\">"
                 + "Reset password</a></p>"
                 + "<p>Or copy this link into your browser:<br/><code>"
-                + resetLink
+                + safeLink
                 + "</code></p>"
                 + "<p><strong>This link will expire in "
                 + tokenTtlMinutes

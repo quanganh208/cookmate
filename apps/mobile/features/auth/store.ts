@@ -10,7 +10,8 @@ interface AuthState {
   setSession: (session: Session | null) => void;
   setStatus: (status: AuthStatus) => void;
   /** Clears local auth state. Callers are responsible for calling the API logout + clearing
-   *  the query cache BEFORE invoking this (see `use-logout` in phase 6). */
+   *  the query cache BEFORE invoking this — see `hooks/use-logout` for the full side-effect
+   *  bundle that orchestrates the correct order. */
   clearSession: () => void;
 }
 

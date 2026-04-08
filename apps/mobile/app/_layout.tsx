@@ -36,10 +36,23 @@ if (GOOGLE_WEB_CLIENT_ID) {
 // Keep splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
 
+/** HTTP status codes that indicate the stored tokens are definitively invalid (hard logout). */
+const AUTH_FAILURE_STATUSES = new Set([401, 403]);
+
+/** Semantic error codes that also mean the stored tokens are invalid. */
+const AUTH_FAILURE_CODES = new Set(['INVALID_TOKEN', 'UNAUTHORIZED', 'BAD_CREDENTIALS']);
+
 /**
  * Hydrate the in-memory auth state from SecureStore on app cold start. If a refresh token is
- * present we call `/auth/me` to verify the access token is still valid; any failure falls back
- * to anonymous mode (the interceptor will try refresh on the next authenticated request).
+ * present we call `/auth/me` to verify the access token is still valid.
+ *
+ * Error handling is deliberately split into two paths:
+ *   - **Auth failure** (401/403 after refresh also failed, or a semantic INVALID_TOKEN code)
+ *     → clear SecureStore + session so the user sees the login prompt.
+ *   - **Transient failure** (offline, 5xx, network error) → keep SecureStore intact and simply
+ *     flip status to `anonymous`. The api-client interceptor will retry the refresh flow on
+ *     the next authenticated request when connectivity is restored, so a flaky network does
+ *     not force-log-out the user.
  */
 function useBootstrapAuth() {
   const setSession = useAuthStore((state) => state.setSession);
@@ -78,13 +91,24 @@ function useBootstrapAuth() {
         if (!cancelled) setSession({ user, accessToken });
       } catch (err) {
         if (cancelled) return;
-        // Any ApiError here means the refresh flow already ran and failed; the interceptor
-        // will have cleared SecureStore + emitted auth:logout. Just flip status anonymous.
-        if (!(err instanceof ApiError)) {
-          console.warn('[bootstrap] /auth/me failed with non-ApiError', err);
+
+        const isHardAuthFailure =
+          err instanceof ApiError &&
+          (AUTH_FAILURE_STATUSES.has(err.status) || AUTH_FAILURE_CODES.has(err.code));
+
+        if (isHardAuthFailure) {
+          // Refresh already ran + failed inside the interceptor, or tokens are definitively
+          // invalid. Wipe local state so the user sees the login UI on the next action.
+          await secureTokenStorage.clear();
+          useAuthStore.getState().clearSession();
+          return;
         }
-        await secureTokenStorage.clear();
-        useAuthStore.getState().clearSession();
+
+        // Transient failure (offline, 5xx, parse error). Keep tokens, just flip to anonymous
+        // so the splash dismisses; the next authenticated request will retry the refresh.
+        console.warn('[bootstrap] /auth/me failed transiently, keeping tokens', err);
+        useAuthStore.setState({ session: null });
+        setStatus('anonymous');
       }
     })();
 

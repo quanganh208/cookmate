@@ -29,7 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 **Mobile:**
 
 - Auth feature module with 8 endpoints (login, register, google, refresh, me, logout, forgot-password, reset-password)
-- Zustand auth store with session state + bootstrap status (authenticating/authenticated/anonymous)
+- Zustand auth store with session state + bootstrap status (bootstrapping/authenticated/anonymous)
 - Login/register screens with Zod form validation + react-hook-form
 - Forgot/reset password screens with email + token validation flows
 - Google Sign-In integration with native credentials
@@ -41,7 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Root layout bootstrap: hydrate session from SecureStore, call /auth/me, gate render on completion
 - Feature gating: Favorites/Create screens wrapped in AuthGate; Profile with LoginPromptCard for guests
 - Deep link support: `cookmate://reset?token=xxx` for password reset links
-- Error mapper: backend error codes → Vietnamese user messages (BAD_CREDENTIALS → "Email hoặc mật khẩu không chính xác")
+- Error mapper: backend error codes → English user messages (e.g. BAD_CREDENTIALS → "Incorrect email or password")
 
 **Mobile Dependencies:**
 
@@ -74,7 +74,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Concurrent reset race on `used` flag — read-check-write, not atomic findAndModify (documented in risk register)
 - Universal links not set up — reset link uses `cookmate://` custom scheme only
-- Google Sign-In native creds require manual setup (iosUrlScheme placeholder in app.json)
+- Google Sign-In native creds require manual setup (iosUrlScheme placeholder in apps/mobile/app.config.js)
 
 ## [0.2.2] — 2026-03-24
 
