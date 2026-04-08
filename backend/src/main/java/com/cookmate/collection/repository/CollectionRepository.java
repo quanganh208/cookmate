@@ -11,5 +11,6 @@ public interface CollectionRepository extends MongoRepository<Collection, String
 
     Page<Collection> findByAuthorId(String authorId, Pageable pageable);
 
-    Page<Collection> findByAuthorIdAndIsPrivate(String authorId, Boolean isPrivate, Pageable pageable);
+    Page<Collection> findByAuthorIdAndIsPrivate(
+            String authorId, Boolean isPrivate, Pageable pageable);
 }

@@ -3,12 +3,11 @@ package com.cookmate.recipe.dto;
 import com.cookmate.recipe.model.RecipeIngredient;
 import com.cookmate.recipe.model.Step;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -36,9 +35,7 @@ public class UpdateRecipeRequest {
 
     private String category;
 
-    @Valid
-    private List<Step> steps;
+    @Valid private List<Step> steps;
 
-    @Valid
-    private List<RecipeIngredient> ingredients;
+    @Valid private List<RecipeIngredient> ingredients;
 }

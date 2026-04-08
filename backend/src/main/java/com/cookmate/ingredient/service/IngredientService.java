@@ -5,11 +5,10 @@ import com.cookmate.ingredient.dto.IngredientResponse;
 import com.cookmate.ingredient.model.Ingredient;
 import com.cookmate.ingredient.repository.IngredientRepository;
 import com.cookmate.shared.exception.ResourceNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +17,13 @@ public class IngredientService {
     private final IngredientRepository ingredientRepository;
 
     public IngredientResponse create(IngredientRequest request) {
-        Ingredient ingredient = Ingredient.builder()
-                .name(request.getName())
-                .unitDefault(request.getUnitDefault() != null ? request.getUnitDefault() : "g")
-                .category(request.getCategory())
-                .build();
+        Ingredient ingredient =
+                Ingredient.builder()
+                        .name(request.getName())
+                        .unitDefault(
+                                request.getUnitDefault() != null ? request.getUnitDefault() : "g")
+                        .category(request.getCategory())
+                        .build();
         return IngredientResponse.from(ingredientRepository.save(ingredient));
     }
 
@@ -33,7 +34,8 @@ public class IngredientService {
     }
 
     public IngredientResponse findById(String id) {
-        return ingredientRepository.findById(id)
+        return ingredientRepository
+                .findById(id)
                 .map(IngredientResponse::from)
                 .orElseThrow(() -> new ResourceNotFoundException("Ingredient", id));
     }
@@ -45,8 +47,10 @@ public class IngredientService {
     }
 
     public IngredientResponse update(String id, IngredientRequest request) {
-        Ingredient ingredient = ingredientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ingredient", id));
+        Ingredient ingredient =
+                ingredientRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Ingredient", id));
         ingredient.setName(request.getName());
         if (request.getUnitDefault() != null) {
             ingredient.setUnitDefault(request.getUnitDefault());

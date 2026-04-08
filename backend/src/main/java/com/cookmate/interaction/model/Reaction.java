@@ -1,5 +1,6 @@
 package com.cookmate.interaction.model;
 
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +11,6 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,21 +19,22 @@ import java.time.Instant;
 @CompoundIndex(name = "user_recipe_idx", def = "{'recipeId': 1, 'authorId': 1}", unique = true)
 public class Reaction {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     private ReactionType type;
 
-    @Indexed
-    private String recipeId;
+    @Indexed private String recipeId;
 
-    @Indexed
-    private String authorId;
+    @Indexed private String authorId;
 
-    @CreatedDate
-    private Instant createdAt;
+    @CreatedDate private Instant createdAt;
 
     public enum ReactionType {
-        LIKE, LOVE, HAHA, WOW, SAD, ANGRY
+        LIKE,
+        LOVE,
+        HAHA,
+        WOW,
+        SAD,
+        ANGRY
     }
 }

@@ -29,8 +29,7 @@ public class RecipeController {
     @PostMapping
     @Operation(summary = "Create a new recipe")
     public ResponseEntity<ApiResponse<RecipeResponse>> create(
-            @Valid @RequestBody CreateRecipeRequest request,
-            @AuthenticationPrincipal User user) {
+            @Valid @RequestBody CreateRecipeRequest request, @AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(recipeService.create(request, user.getId())));
     }
@@ -52,16 +51,14 @@ public class RecipeController {
     @GetMapping("/author/{authorId}")
     @Operation(summary = "Get recipes by author")
     public ResponseEntity<ApiResponse<Page<RecipeResponse>>> findByAuthor(
-            @PathVariable String authorId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PathVariable String authorId, @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.ok(recipeService.findByAuthorId(authorId, pageable)));
     }
 
     @GetMapping("/category/{category}")
     @Operation(summary = "Get recipes by category")
     public ResponseEntity<ApiResponse<Page<RecipeResponse>>> findByCategory(
-            @PathVariable String category,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PathVariable String category, @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.ok(recipeService.findByCategory(category, pageable)));
     }
 
@@ -84,8 +81,7 @@ public class RecipeController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a recipe")
     public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable String id,
-            @AuthenticationPrincipal User user) {
+            @PathVariable String id, @AuthenticationPrincipal User user) {
         recipeService.delete(id, user.getId());
         return ResponseEntity.ok(ApiResponse.ok());
     }

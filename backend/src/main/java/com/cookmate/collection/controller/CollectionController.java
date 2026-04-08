@@ -29,8 +29,7 @@ public class CollectionController {
     @PostMapping
     @Operation(summary = "Create a new collection")
     public ResponseEntity<ApiResponse<CollectionResponse>> create(
-            @Valid @RequestBody CollectionRequest request,
-            @AuthenticationPrincipal User user) {
+            @Valid @RequestBody CollectionRequest request, @AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(collectionService.create(request, user.getId())));
     }
@@ -44,9 +43,9 @@ public class CollectionController {
     @GetMapping("/author/{authorId}")
     @Operation(summary = "Get collections by author")
     public ResponseEntity<ApiResponse<Page<CollectionResponse>>> findByAuthor(
-            @PathVariable String authorId,
-            @PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.ok(collectionService.findByAuthorId(authorId, pageable)));
+            @PathVariable String authorId, @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(
+                ApiResponse.ok(collectionService.findByAuthorId(authorId, pageable)));
     }
 
     @PutMapping("/{id}")
@@ -55,7 +54,8 @@ public class CollectionController {
             @PathVariable String id,
             @Valid @RequestBody CollectionRequest request,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(ApiResponse.ok(collectionService.update(id, request, user.getId())));
+        return ResponseEntity.ok(
+                ApiResponse.ok(collectionService.update(id, request, user.getId())));
     }
 
     @PostMapping("/{id}/recipes")
@@ -64,8 +64,9 @@ public class CollectionController {
             @PathVariable String id,
             @Valid @RequestBody RecipeIdRequest request,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(ApiResponse.ok(
-                collectionService.addRecipe(id, request.getRecipeId(), user.getId())));
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                        collectionService.addRecipe(id, request.getRecipeId(), user.getId())));
     }
 
     @DeleteMapping("/{id}/recipes/{recipeId}")
@@ -74,15 +75,14 @@ public class CollectionController {
             @PathVariable String id,
             @PathVariable String recipeId,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(ApiResponse.ok(
-                collectionService.removeRecipe(id, recipeId, user.getId())));
+        return ResponseEntity.ok(
+                ApiResponse.ok(collectionService.removeRecipe(id, recipeId, user.getId())));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a collection")
     public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable String id,
-            @AuthenticationPrincipal User user) {
+            @PathVariable String id, @AuthenticationPrincipal User user) {
         collectionService.delete(id, user.getId());
         return ResponseEntity.ok(ApiResponse.ok());
     }

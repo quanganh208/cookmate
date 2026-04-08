@@ -38,16 +38,14 @@ public class CommentController {
     @GetMapping
     @Operation(summary = "Get comments for a recipe")
     public ResponseEntity<ApiResponse<Page<InteractionResponse>>> findByRecipe(
-            @PathVariable String recipeId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PathVariable String recipeId, @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.ok(commentService.findByRecipe(recipeId, pageable)));
     }
 
     @GetMapping("/author/{authorId}")
     @Operation(summary = "Get comments by a user")
     public ResponseEntity<ApiResponse<Page<InteractionResponse>>> findByAuthor(
-            @PathVariable String authorId,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PathVariable String authorId, @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.ok(commentService.findByAuthor(authorId, pageable)));
     }
 

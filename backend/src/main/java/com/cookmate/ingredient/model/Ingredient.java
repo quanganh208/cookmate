@@ -1,5 +1,6 @@
 package com.cookmate.ingredient.model;
 
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +11,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,20 +18,16 @@ import java.time.Instant;
 @Document("ingredients")
 public class Ingredient {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     @Indexed(unique = true)
     private String name;
 
-    @Builder.Default
-    private String unitDefault = "g";
+    @Builder.Default private String unitDefault = "g";
 
     private String category;
 
-    @CreatedDate
-    private Instant createdAt;
+    @CreatedDate private Instant createdAt;
 
-    @LastModifiedDate
-    private Instant updatedAt;
+    @LastModifiedDate private Instant updatedAt;
 }

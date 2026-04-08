@@ -2,13 +2,12 @@ package com.cookmate.collection.dto;
 
 import com.cookmate.collection.model.Collection;
 import com.cookmate.collection.model.CollectionEntry;
+import java.time.Instant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.Instant;
-import java.util.List;
 
 @Data
 @Builder
@@ -36,7 +35,8 @@ public class CollectionResponse {
                 .isPrivate(collection.getIsPrivate())
                 .authorId(collection.getAuthorId())
                 .recipeIds(collection.getRecipeIds())
-                .recipeCount(collection.getRecipeIds() != null ? collection.getRecipeIds().size() : 0)
+                .recipeCount(
+                        collection.getRecipeIds() != null ? collection.getRecipeIds().size() : 0)
                 .createdAt(collection.getCreatedAt())
                 .updatedAt(collection.getUpdatedAt())
                 .build();

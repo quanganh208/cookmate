@@ -7,12 +7,11 @@ import com.cookmate.shared.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/ingredients")
@@ -52,8 +51,7 @@ public class IngredientController {
     @PutMapping("/{id}")
     @Operation(summary = "Update an ingredient")
     public ResponseEntity<ApiResponse<IngredientResponse>> update(
-            @PathVariable String id,
-            @Valid @RequestBody IngredientRequest request) {
+            @PathVariable String id, @Valid @RequestBody IngredientRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(ingredientService.update(id, request)));
     }
 

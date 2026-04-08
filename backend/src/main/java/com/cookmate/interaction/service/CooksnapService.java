@@ -20,12 +20,13 @@ public class CooksnapService {
     private final UserRepository userRepository;
 
     public InteractionResponse create(String recipeId, CooksnapRequest request, String authorId) {
-        Cooksnap cooksnap = Cooksnap.builder()
-                .recipeId(recipeId)
-                .imageUrl(request.getImageUrl())
-                .caption(request.getCaption())
-                .authorId(authorId)
-                .build();
+        Cooksnap cooksnap =
+                Cooksnap.builder()
+                        .recipeId(recipeId)
+                        .imageUrl(request.getImageUrl())
+                        .caption(request.getCaption())
+                        .authorId(authorId)
+                        .build();
         cooksnap = cooksnapRepository.save(cooksnap);
         return toResponse(cooksnap);
     }
@@ -39,8 +40,10 @@ public class CooksnapService {
     }
 
     public void delete(String id, String authorId) {
-        Cooksnap cooksnap = cooksnapRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cooksnap", id));
+        Cooksnap cooksnap =
+                cooksnapRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Cooksnap", id));
         if (!cooksnap.getAuthorId().equals(authorId)) {
             throw new RuntimeException("Not authorized");
         }
@@ -48,15 +51,17 @@ public class CooksnapService {
     }
 
     private InteractionResponse toResponse(Cooksnap cooksnap) {
-        InteractionResponse.InteractionResponseBuilder b = InteractionResponse.builder()
-                .id(cooksnap.getId())
-                .imageUrl(cooksnap.getImageUrl())
-                .caption(cooksnap.getCaption())
-                .recipeId(cooksnap.getRecipeId())
-                .authorId(cooksnap.getAuthorId())
-                .createdAt(cooksnap.getCreatedAt())
-                .updatedAt(cooksnap.getUpdatedAt());
-        userRepository.findById(cooksnap.getAuthorId())
+        InteractionResponse.InteractionResponseBuilder b =
+                InteractionResponse.builder()
+                        .id(cooksnap.getId())
+                        .imageUrl(cooksnap.getImageUrl())
+                        .caption(cooksnap.getCaption())
+                        .recipeId(cooksnap.getRecipeId())
+                        .authorId(cooksnap.getAuthorId())
+                        .createdAt(cooksnap.getCreatedAt())
+                        .updatedAt(cooksnap.getUpdatedAt());
+        userRepository
+                .findById(cooksnap.getAuthorId())
                 .ifPresent(u -> b.author(UserResponse.from(u)));
         return b.build();
     }

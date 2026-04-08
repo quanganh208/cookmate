@@ -8,12 +8,11 @@ import com.cookmate.shared.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/recipes/{recipeId}/reactions")
@@ -29,8 +28,8 @@ public class ReactionController {
             @PathVariable String recipeId,
             @Valid @RequestBody ReactionRequest request,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(ApiResponse.ok(
-                reactionService.react(recipeId, request, user.getId())));
+        return ResponseEntity.ok(
+                ApiResponse.ok(reactionService.react(recipeId, request, user.getId())));
     }
 
     @GetMapping
@@ -43,8 +42,7 @@ public class ReactionController {
     @DeleteMapping
     @Operation(summary = "Remove reaction from a recipe")
     public ResponseEntity<ApiResponse<Void>> remove(
-            @PathVariable String recipeId,
-            @AuthenticationPrincipal User user) {
+            @PathVariable String recipeId, @AuthenticationPrincipal User user) {
         reactionService.removeReaction(recipeId, user.getId());
         return ResponseEntity.ok(ApiResponse.ok());
     }

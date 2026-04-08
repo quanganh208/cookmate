@@ -1,5 +1,6 @@
 package com.cookmate.interaction.model;
 
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +11,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,22 +18,17 @@ import java.time.Instant;
 @Document("comments")
 public class Comment {
 
-    @Id
-    private String id;
+    @Id private String id;
 
     private String content;
 
-    @Indexed
-    private String recipeId;
+    @Indexed private String recipeId;
 
-    @Indexed
-    private String authorId;
+    @Indexed private String authorId;
 
     private String parentId;
 
-    @CreatedDate
-    private Instant createdAt;
+    @CreatedDate private Instant createdAt;
 
-    @LastModifiedDate
-    private Instant updatedAt;
+    @LastModifiedDate private Instant updatedAt;
 }

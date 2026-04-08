@@ -1,7 +1,6 @@
 package com.cookmate.interaction.service;
 
 import com.cookmate.auth.dto.UserResponse;
-import com.cookmate.auth.model.User;
 import com.cookmate.auth.repository.UserRepository;
 import com.cookmate.interaction.dto.CommentRequest;
 import com.cookmate.interaction.model.Comment;
@@ -21,12 +20,13 @@ public class CommentService {
     private final UserRepository userRepository;
 
     public InteractionResponse create(String recipeId, CommentRequest request, String authorId) {
-        Comment comment = Comment.builder()
-                .recipeId(recipeId)
-                .content(request.getContent())
-                .authorId(authorId)
-                .parentId(request.getParentId())
-                .build();
+        Comment comment =
+                Comment.builder()
+                        .recipeId(recipeId)
+                        .content(request.getContent())
+                        .authorId(authorId)
+                        .parentId(request.getParentId())
+                        .build();
         comment = commentRepository.save(comment);
         return toResponse(comment);
     }
@@ -40,8 +40,10 @@ public class CommentService {
     }
 
     public void delete(String id, String authorId) {
-        Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment", id));
+        Comment comment =
+                commentRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Comment", id));
         if (!comment.getAuthorId().equals(authorId)) {
             throw new RuntimeException("Not authorized");
         }
@@ -53,15 +55,17 @@ public class CommentService {
     }
 
     private InteractionResponse toResponse(Comment comment) {
-        InteractionResponse.InteractionResponseBuilder b = InteractionResponse.builder()
-                .id(comment.getId())
-                .content(comment.getContent())
-                .recipeId(comment.getRecipeId())
-                .authorId(comment.getAuthorId())
-                .parentId(comment.getParentId())
-                .createdAt(comment.getCreatedAt())
-                .updatedAt(comment.getUpdatedAt());
-        userRepository.findById(comment.getAuthorId())
+        InteractionResponse.InteractionResponseBuilder b =
+                InteractionResponse.builder()
+                        .id(comment.getId())
+                        .content(comment.getContent())
+                        .recipeId(comment.getRecipeId())
+                        .authorId(comment.getAuthorId())
+                        .parentId(comment.getParentId())
+                        .createdAt(comment.getCreatedAt())
+                        .updatedAt(comment.getUpdatedAt());
+        userRepository
+                .findById(comment.getAuthorId())
                 .ifPresent(u -> b.author(UserResponse.from(u)));
         return b.build();
     }
