@@ -4,7 +4,11 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { mmkvQueryStorage } from './mmkv-storage';
 
-const queryClient = new QueryClient({
+/**
+ * Global singleton QueryClient. Exported so the auth feature can clear the cache on logout
+ * without re-constructing a new client (which would drop all subscribers).
+ */
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000,
