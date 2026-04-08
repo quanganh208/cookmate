@@ -6,11 +6,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.cookmate.auth.dto.AuthResponse;
+import com.cookmate.auth.dto.ForgotPasswordRequest;
 import com.cookmate.auth.dto.LoginRequest;
 import com.cookmate.auth.dto.RefreshTokenRequest;
 import com.cookmate.auth.dto.RegisterRequest;
+import com.cookmate.auth.dto.ResetPasswordRequest;
+import com.cookmate.auth.repository.PasswordResetTokenRepository;
 import com.cookmate.auth.repository.RefreshTokenRepository;
 import com.cookmate.auth.repository.UserRepository;
+import com.cookmate.shared.service.EmailService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -36,6 +41,10 @@ class AuthControllerIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private UserRepository userRepository;
     @Autowired private RefreshTokenRepository refreshTokenRepository;
+    @Autowired private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    /** Replace the real SMTP-backed service so tests never touch Gmail. */
+    @MockitoBean private EmailService emailService;
 
     private MockMvc mockMvc;
 
@@ -47,6 +56,7 @@ class AuthControllerIntegrationTest {
                         .build();
         userRepository.deleteAll();
         refreshTokenRepository.deleteAll();
+        passwordResetTokenRepository.deleteAll();
     }
 
     // -- Helper methods --
@@ -278,5 +288,103 @@ class AuthControllerIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    // -- Forgot password tests --
+
+    private ForgotPasswordRequest forgotRequest(String email) {
+        ForgotPasswordRequest r = new ForgotPasswordRequest();
+        r.setEmail(email);
+        return r;
+    }
+
+    @Test
+    void forgotPassword_UnknownEmail_ReturnsGeneric200() throws Exception {
+        mockMvc.perform(
+                        post("/api/auth/forgot-password")
+                                .header("X-API-Key", API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                forgotRequest("ghost@example.com"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.message").exists());
+
+        // Email must NOT be dispatched for unknown recipients.
+        org.mockito.Mockito.verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void forgotPassword_KnownEmail_PersistsTokenAndTriggersEmail() throws Exception {
+        registerUser("forgot@example.com", "FirstPass123!", "Forgot User");
+
+        mockMvc.perform(
+                        post("/api/auth/forgot-password")
+                                .header("X-API-Key", API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                forgotRequest("forgot@example.com"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        assertEquals(1, passwordResetTokenRepository.count(), "one reset token should exist");
+        org.mockito.Mockito.verify(emailService)
+                .sendPasswordResetEmail(
+                        org.mockito.ArgumentMatchers.eq("forgot@example.com"),
+                        org.mockito.ArgumentMatchers.eq("Forgot User"),
+                        org.mockito.ArgumentMatchers.startsWith("cookmate://reset?token="));
+    }
+
+    @Test
+    void forgotPassword_InvalidEmailFormat_Returns400() throws Exception {
+        mockMvc.perform(
+                        post("/api/auth/forgot-password")
+                                .header("X-API-Key", API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                forgotRequest("not-an-email"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+    }
+
+    // -- Reset password tests --
+
+    private ResetPasswordRequest resetRequest(String token, String newPassword) {
+        ResetPasswordRequest r = new ResetPasswordRequest();
+        r.setToken(token);
+        r.setNewPassword(newPassword);
+        return r;
+    }
+
+    @Test
+    void resetPassword_InvalidToken_Returns400() throws Exception {
+        mockMvc.perform(
+                        post("/api/auth/reset-password")
+                                .header("X-API-Key", API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                resetRequest("not-a-real-token", "NewPass123!"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("RESET_TOKEN_INVALID"));
+    }
+
+    @Test
+    void resetPassword_TooShortPassword_Returns400() throws Exception {
+        mockMvc.perform(
+                        post("/api/auth/reset-password")
+                                .header("X-API-Key", API_KEY)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                resetRequest("anything", "short"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
     }
 }

@@ -1,10 +1,13 @@
 package com.cookmate.auth.controller;
 
 import com.cookmate.auth.dto.AuthResponse;
+import com.cookmate.auth.dto.ForgotPasswordRequest;
 import com.cookmate.auth.dto.GoogleAuthRequest;
 import com.cookmate.auth.dto.LoginRequest;
+import com.cookmate.auth.dto.MessageResponse;
 import com.cookmate.auth.dto.RefreshTokenRequest;
 import com.cookmate.auth.dto.RegisterRequest;
+import com.cookmate.auth.dto.ResetPasswordRequest;
 import com.cookmate.auth.dto.UserResponse;
 import com.cookmate.auth.model.User;
 import com.cookmate.auth.service.AuthService;
@@ -65,6 +68,27 @@ public class AuthController {
             @Valid @RequestBody RefreshTokenRequest request) {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.ok());
+    }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Request a password reset email")
+    public ResponseEntity<ApiResponse<MessageResponse>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                        MessageResponse.of(
+                                "If an account with that email exists, a reset link has been"
+                                        + " sent.")));
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset password using a token from the reset email")
+    public ResponseEntity<ApiResponse<MessageResponse>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(
+                ApiResponse.ok(MessageResponse.of("Password has been reset successfully.")));
     }
 
     @GetMapping("/me")

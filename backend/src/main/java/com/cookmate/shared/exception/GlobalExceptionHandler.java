@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAuthException(
             com.cookmate.auth.exception.AuthException ex) {
         return ResponseEntity.status(ex.getStatus())
-                .body(ApiResponse.error(ex.getStatus().name(), ex.getMessage()));
+                .body(ApiResponse.error(ex.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(GoogleOAuthService.GoogleAuthException.class)

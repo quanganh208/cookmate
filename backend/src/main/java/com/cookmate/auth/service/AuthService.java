@@ -1,9 +1,11 @@
 package com.cookmate.auth.service;
 
 import com.cookmate.auth.dto.AuthResponse;
+import com.cookmate.auth.dto.ForgotPasswordRequest;
 import com.cookmate.auth.dto.GoogleAuthRequest;
 import com.cookmate.auth.dto.LoginRequest;
 import com.cookmate.auth.dto.RegisterRequest;
+import com.cookmate.auth.dto.ResetPasswordRequest;
 import com.cookmate.auth.dto.UserResponse;
 import com.cookmate.auth.exception.AuthException;
 import com.cookmate.auth.model.AuthProvider;
@@ -15,10 +17,12 @@ import com.cookmate.auth.service.GoogleOAuthService.GoogleUserInfo;
 import com.cookmate.shared.security.JwtTokenProvider;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -28,6 +32,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final GoogleOAuthService googleOAuthService;
+    private final PasswordResetService passwordResetService;
 
     @Value("${app.auth.jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
@@ -132,6 +137,29 @@ public class AuthService {
     /** Revoke a refresh token (logout). */
     public void logout(String refreshTokenStr) {
         refreshTokenRepository.deleteByToken(refreshTokenStr);
+    }
+
+    /**
+     * Initiate a password reset. Unknown emails silently no-op inside the service; rate-limit
+     * errors are swallowed here so the response stays generic. Any other {@link AuthException} is
+     * propagated so it surfaces via the global exception handler (fail-loud on new error codes
+     * rather than accidentally hiding them).
+     */
+    public void forgotPassword(ForgotPasswordRequest request) {
+        try {
+            passwordResetService.createResetToken(request.getEmail());
+        } catch (AuthException ex) {
+            if ("RESET_RATE_LIMITED".equals(ex.getCode())) {
+                log.debug("forgotPassword rate-limited for {}", request.getEmail());
+                return;
+            }
+            throw ex;
+        }
+    }
+
+    /** Apply a new password using a valid reset token. */
+    public void resetPassword(ResetPasswordRequest request) {
+        passwordResetService.verifyAndReset(request.getToken(), request.getNewPassword());
     }
 
     /** Build AuthResponse with new access + refresh tokens. */

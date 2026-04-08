@@ -3,7 +3,19 @@ spring:
     name: cookmate
   data:
     mongodb:
-      uri: mongodb://localhost:27017/cookmate
+      uri: ${MONGODB_URI:mongodb://localhost:27017/cookmate}
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${GMAIL_USERNAME:}
+    password: ${GMAIL_APP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 
 server:
   port: 8080
@@ -14,13 +26,25 @@ springdoc:
 
 app:
   auth:
-    api-key: ${API_KEY:dev-api-key-change-in-production}
+    # Shared with mobile via EXPO_PUBLIC_API_KEY in root .env so both sides
+    # read the exact same value (avoids drift between client header and server check).
+    api-key: ${EXPO_PUBLIC_API_KEY:dev-api-key-change-in-production}
     jwt:
       secret: ${JWT_SECRET:dev-jwt-secret-must-be-at-least-64-characters-long-for-hmac-sha512-signing}
       access-token-expiration: 900000
       refresh-token-expiration: 2592000000
     google:
-      client-id: ${GOOGLE_CLIENT_ID:}
+      # Same web client ID the mobile SDK requests tokens with → audience match.
+      client-id: ${EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID:}
+  mail:
+    from: ${MAIL_FROM:noreply@cookmate.app}
+    from-name: ${MAIL_FROM_NAME:Cookmate}
+  password-reset:
+    token-ttl-minutes: 15
+    base-url: cookmate://reset
+    rate-limit:
+      max-requests: 3
+      window-minutes: 60
 
 management:
   endpoints:
