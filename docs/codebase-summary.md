@@ -26,17 +26,23 @@ cookmate/
 ```
 apps/mobile/
 ├── app/                      Expo Router routes (thin wrappers only)
-│   ├── _layout.tsx           Root stack + QueryClientProvider + fonts
+│   ├── _layout.tsx           Root stack + QueryClientProvider + fonts + bootstrap
 │   ├── (tabs)/               Tab navigator group
-│   │   ├── _layout.tsx       5-tab bottom navigation
+│   │   ├── _layout.tsx       5-tab bottom navigation (gated with AuthGate)
 │   │   ├── index.tsx         Home screen route
 │   │   ├── search.tsx        Search screen route
-│   │   ├── create.tsx        Create recipe screen route
-│   │   ├── saved.tsx         Favorites screen route
+│   │   ├── create.tsx        Create recipe screen route (gated)
+│   │   ├── saved.tsx         Favorites screen route (gated)
 │   │   └── profile.tsx       Profile screen route
+│   ├── (auth)/               Auth route group (modal presentation)
+│   │   ├── _layout.tsx       Auth stack layout
+│   │   ├── login.tsx         Login screen route
+│   │   ├── register.tsx      Register screen route
+│   │   ├── forgot-password.tsx Forgot password screen route
+│   │   └── reset-password.tsx Reset password screen route
 │   ├── recipe/[id].tsx       Recipe detail screen route
 │   └── +not-found.tsx        404 page
-├── features/                 6 self-contained feature modules
+├── features/                 7 self-contained feature modules (+ auth)
 │   ├── home/                 Home feed feature
 │   │   ├── components/       HomeHeader, SearchBarShortcut, FeaturedCarousel, TrendingSection
 │   │   ├── screens/          HomeScreen component
@@ -51,14 +57,24 @@ apps/mobile/
 │   ├── search/               Search feature
 │   │   ├── screens/          SearchScreen
 │   │   └── index.ts          Barrel export
-│   ├── favorites/            Saved/bookmarked recipes
+│   ├── favorites/            Saved/bookmarked recipes (AuthGate wrapped)
 │   │   ├── screens/          FavoritesScreen
 │   │   └── index.ts          Barrel export
-│   ├── create-recipe/        Recipe creation feature
+│   ├── create-recipe/        Recipe creation feature (AuthGate wrapped)
 │   │   ├── screens/          CreateRecipeScreen
 │   │   └── index.ts          Barrel export
-│   └── profile/              User profile feature
-│       ├── screens/          ProfileScreen
+│   ├── profile/              User profile feature
+│   │   ├── screens/          ProfileScreen (conditional login prompt / profile view)
+│   │   └── index.ts          Barrel export
+│   └── auth/                 Authentication feature (Phase 3.5)
+│       ├── api/              auth-repository.ts (8 endpoints: login, register, google, refresh, me, logout, forgot, reset)
+│       ├── hooks/            use-login-mutation, use-register-mutation, use-google-login, use-forgot-password-mutation, use-reset-password-mutation, use-logout
+│       ├── screens/          LoginScreen, RegisterScreen, ForgotPasswordScreen, ResetPasswordScreen
+│       ├── components/       AuthFormField, AuthSubmitButton, AuthHeader, AuthFooterLink, AuthErrorBanner, GoogleSignInButton, LoginPromptCard, AuthGate
+│       ├── store.ts          Zustand auth store with session, status, setSession, clearSession
+│       ├── types.ts          AuthUser, Session, AuthResponsePayload, credentials types
+│       ├── validation/       auth-schemas.ts (Zod schemas for login/register/forgot/reset)
+│       ├── utils/            error-mapper.ts (backend error codes → Vietnamese user messages)
 │       └── index.ts          Barrel export
 ├── shared/                   Cross-feature utilities
 │   ├── components/           Reusable UI components
@@ -68,9 +84,12 @@ apps/mobile/
 │   │   ├── recipe-card-compact.tsx   Grid-layout compact card
 │   │   └── index.ts          Barrel export
 │   ├── api/                  HTTP & state management
-│   │   ├── api-client.ts     Axios-like HTTP wrapper
+│   │   ├── api-client.ts     Axios-like HTTP wrapper (Bearer token injection, envelope unwrap, 401 refresh interceptor, single-flight)
+│   │   ├── api-error.ts      ApiError class + ApiResponseEnvelope type
+│   │   ├── secure-token-storage.ts   expo-secure-store wrapper (Keychain/Keystore)
+│   │   ├── auth-events.ts    Tiny pub-sub for auth:logout event
 │   │   ├── mmkv-storage.ts   Fast local storage (offline caching)
-│   │   ├── query-client-provider.tsx TanStack Query + persist setup
+│   │   ├── query-client-provider.tsx TanStack Query + persist setup (exports queryClient singleton)
 │   │   └── index.ts          Barrel export
 │   ├── constants/            App-wide constants
 │   │   ├── colors.ts         Warm palette (primary, secondary, etc)
@@ -79,11 +98,13 @@ apps/mobile/
 │   │   └── index.ts          Barrel export
 │   ├── types/                Global TypeScript types
 │   │   └── index.ts          Barrel re-exports (Recipe, Author, etc)
-│   └── hooks/                (future: auth, navigation utilities)
-└── services/                 (empty, reserved for external integrations)
+│   └── hooks/                Navigation & auth utilities
+│       ├── use-require-auth.ts Imperative gate for action handlers
+│       └── index.ts          Barrel export
+└── services/                 Reserved for external integrations
 ```
 
-**Key Entry Point:** `apps/mobile/app/_layout.tsx` — Root layout wraps app in QueryClientProvider, loads fonts, initializes MMKV
+**Key Entry Point:** `apps/mobile/app/_layout.tsx` — Root layout wraps app in QueryClientProvider, loads fonts, initializes MMKV, bootstraps auth session from SecureStore, gates render on bootstrap completion
 **Routing Strategy:** File-based via Expo Router; route files are 2-line wrappers (import screen + export)
 **State Management:**
 
@@ -91,8 +112,9 @@ apps/mobile/
 - Server state: TanStack React Query (recipes, user data, async operations)
 - Offline caching: MMKV storage + TanStack Query sync persister
   **Feature Module Pattern:** Each feature is self-contained with own components, hooks, api, store, types; imports shared utilities via `@/shared/*`
-  **Shared Components:** 4 reusable components (AnimatedPressable, CategoryChips, RecipeCardFeatured, RecipeCardCompact)
-  **API Layer:** Repository pattern (RecipesRepository) abstracts HTTP calls; TanStack Query wraps with caching + offline sync
+  **Shared Components:** 4 reusable components (AnimatedPressable, CategoryChips, RecipeCardFeatured, RecipeCardCompact) + 8 auth components (AuthFormField, AuthSubmitButton, etc.)
+  **API Layer:** Repository pattern abstracts HTTP calls; TanStack Query wraps with caching + offline sync. api-client includes Bearer token injection, envelope unwrap, automatic JWT refresh on 401 with single-flight lock, and automatic logout on refresh failure.
+  **Token Management:** Access token in Zustand memory + SecureStore; refresh token in SecureStore only. SecureStore uses expo-secure-store (Keychain on iOS, Keystore on Android).
   **Offline Strategy:** MMKV + TanStack Query sync persister caches recipe data locally for offline browsing
   **Styling:** React Native StyleSheet + warm color palette (primary #FF7A3D, secondary #8B6914)
   **Animations:** Reanimated for card press effects via AnimatedPressable
@@ -115,15 +137,21 @@ com.cookmate/
 │   │   ├── AuthController.java            Authentication endpoints
 │   │   └── AuthControllerIntegrationTest  Integration tests
 │   ├── service/
-│   │   ├── AuthService.java               User registration, login, token management
+│   │   ├── AuthService.java               User registration, login, token management, logout
 │   │   ├── GoogleOAuthService.java        Google OAuth integration
-│   │   └── AuthServiceTest.java           Service unit tests
+│   │   ├── PasswordResetService.java      Password reset token generation, validation, hashing (SHA-256), TTL management, rate limiting
+│   │   ├── EmailService.java              Async email sending via Gmail SMTP, HTML templates
+│   │   ├── AuthServiceTest.java           Service unit tests
+│   │   ├── PasswordResetServiceTest.java  Password reset service tests (rate limit, token lifecycle)
+│   │   └── EmailServiceTest.java          Email service tests
 │   ├── repository/
 │   │   ├── UserRepository.java            User queries
-│   │   └── RefreshTokenRepository.java    Refresh token queries with TTL
+│   │   ├── RefreshTokenRepository.java    Refresh token queries with TTL
+│   │   └── PasswordResetTokenRepository.java Password reset token queries with TTL
 │   ├── model/
 │   │   ├── User.java                      User document
 │   │   ├── RefreshToken.java              Refresh token document (auto-cleanup via TTL)
+│   │   ├── PasswordResetToken.java        Password reset token with SHA-256 hash, TTL (15m), one-time used flag
 │   │   ├── Role.java                      User roles enum
 │   │   └── AuthProvider.java              OAuth provider enum (LOCAL, GOOGLE)
 │   ├── dto/
@@ -132,9 +160,12 @@ com.cookmate/
 │   │   ├── LoginRequest.java              Login request
 │   │   ├── RegisterRequest.java           Registration request
 │   │   ├── GoogleAuthRequest.java         Google OAuth request
-│   │   └── RefreshTokenRequest.java       Token refresh request
+│   │   ├── RefreshTokenRequest.java       Token refresh request
+│   │   ├── ForgotPasswordRequest.java     Forgot password (email) request
+│   │   ├── ResetPasswordRequest.java      Reset password (token + new password) request
+│   │   └── MessageResponse.java           Generic success message response
 │   └── exception/
-│       └── AuthException.java             Authentication-related errors
+│       └── AuthException.java             Authentication-related errors (semantic error codes: BAD_CREDENTIALS, EMAIL_TAKEN, INVALID_TOKEN, OAUTH_ONLY, EMAIL_EXISTS_WITH_PASSWORD, RESET_TOKEN_INVALID, RESET_TOKEN_EXPIRED, RESET_RATE_LIMITED)
 ├── shared/                                 Shared utilities & config
 │   ├── controller/
 │   │   └── HealthController.java          Health check endpoint
@@ -174,6 +205,7 @@ com.cookmate/
   - Access Token: 15 minutes
   - Refresh Token: 30 days (stored in MongoDB with TTL auto-cleanup)
 - **OAuth:** Google OAuth2 integration (GoogleOAuthService)
+- **Error Codes (Wire Format):** `AuthException` carries semantic `code` field (e.g., `BAD_CREDENTIALS`, `EMAIL_TAKEN`, `INVALID_TOKEN`, `OAUTH_ONLY`, `EMAIL_EXISTS_WITH_PASSWORD`, `RESET_TOKEN_INVALID`, `RESET_TOKEN_EXPIRED`, `RESET_RATE_LIMITED`) — returned in `ApiResponse.error.code` instead of HTTP status name
 
 **Endpoints Implemented:**
 
@@ -183,7 +215,9 @@ com.cookmate/
 - `POST /api/auth/google` — Google OAuth login
 - `POST /api/auth/refresh` — Token refresh (refresh token rotation)
 - `GET /api/auth/me` — Current user profile (JWT required)
-- `POST /api/auth/logout` — Logout (revokes refresh token)
+- `POST /api/auth/logout` — Logout (revokes refresh token, revokes all user refresh tokens on password reset)
+- `POST /api/auth/forgot-password` — Initiate password reset (sends email with reset link, rate limited 3/hour)
+- `POST /api/auth/reset-password` — Complete password reset (validates token, updates password)
 
 ## Database (MongoDB 8.0)
 
@@ -191,6 +225,7 @@ com.cookmate/
 
 - `users` — User accounts with credentials, OAuth providers
 - `refreshTokens` — Active refresh tokens with TTL auto-cleanup (30-day expiry)
+- `passwordResetTokens` — Password reset tokens with SHA-256 hash, TTL auto-cleanup (15-minute expiry), one-time used flag
 - `recipes` — Recipe documents (planned Phase 4)
 - `follows` — User follow relationships (planned Phase 5)
 - `likes` — Like/bookmark mappings (planned Phase 5)
@@ -246,6 +281,11 @@ com.cookmate/
 - `@expo-google-fonts/lora`, `@expo-google-fonts/dm-sans` (custom fonts)
 - `expo-splash-screen` (font loading splash screen)
 - `@expo/vector-icons` (FontAwesome6, MaterialCommunityIcons)
+- `expo-secure-store` (Keychain/Keystore token storage)
+- `@react-native-google-signin/google-signin` (Native Google Sign-In)
+- `react-hook-form` (Form state management)
+- `zod` (Schema validation)
+- `@hookform/resolvers` (Form validation integration)
 - `typescript` 5.9.x, `eslint` 9.x, `prettier`
 
 **Backend:**
@@ -253,6 +293,7 @@ com.cookmate/
 - `spring-boot-starter-web` — REST framework
 - `spring-boot-starter-data-mongodb` — MongoDB access
 - `spring-boot-starter-security` — Authentication & authorization
+- `spring-boot-starter-mail` — Email sending (Gmail SMTP)
 - `org.projectlombok:lombok` — Boilerplate reduction
 - `spring-boot-starter-validation` — @Valid annotations
 - `spring-boot-devtools` — Hot reload

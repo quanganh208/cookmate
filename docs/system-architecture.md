@@ -238,6 +238,94 @@ AuthService removes refresh token from MongoDB
 Response: { success: true }
 ```
 
+**Password Reset (POST /api/auth/forgot-password → POST /api/auth/reset-password):**
+
+```
+Step 1: Forgot Password (POST /api/auth/forgot-password)
+Client sends: { email }
+  ↓
+PasswordResetService generates random token, hashes (SHA-256), stores in MongoDB (TTL 15m)
+  ↓
+EmailService sends async HTML email with reset link: cookmate://reset?token={plain-token}
+  ↓
+Response: { success: true, message: "Check your email" }
+
+Step 2: Reset Password (POST /api/auth/reset-password)
+User taps link in email → app receives deep link → ResetPasswordScreen shows
+User enters new password, submits form with { token, newPassword }
+  ↓
+PasswordResetService validates token (exists, hash matches, not expired, not used)
+  ↓
+AuthService updates User.password, marks reset token used
+  ↓
+AuthService revokes ALL refresh tokens for user (force re-login everywhere)
+  ↓
+Response: { success: true, message: "Password updated" }
+```
+
+## Token Lifecycle
+
+**Access Token (JWT, 15 minutes):**
+
+- Created on login/register/refresh
+- Stored in Zustand auth store (memory only)
+- Also cached in SecureStore for recovery across app restarts
+- Included in `Authorization: Bearer {token}` header on all protected requests
+- Expires after 15 minutes (client-side + server-side validation)
+- On 401 response → single-flight refresh interceptor kicks in
+
+**Refresh Token (30 days, stored in MongoDB):**
+
+- Created on login/register/refresh
+- Stored ONLY in SecureStore (Keychain on iOS, Keystore on Android) — never in memory
+- Never sent in HTTP request body (except in refresh endpoint)
+- Rotated on every refresh call (new token issued, old one invalidated)
+- Auto-cleaned up by MongoDB TTL index after 30-day expiry
+- Revoked immediately on: logout, password reset, manual revocation
+- Single instance per user (previous refresh tokens invalidated on new login)
+
+**Password Reset Token (15 minutes, stored in MongoDB):**
+
+- Generated as random string (e.g., 32 bytes)
+- Plain token sent to user's email; hash stored in DB (SHA-256)
+- Marked used=true after successful password reset (prevents re-use)
+- Auto-cleaned up by MongoDB TTL index after 15-minute expiry
+- Email contains deep link: `cookmate://reset?token={plain-token}`
+
+## Mobile Auth Bootstrap Flow
+
+**Cold Start (app launch):**
+
+1. Root layout (\_layout.tsx) renders with `status: 'bootstrapping'`
+2. useEffect: read refreshToken from SecureStore (fail-open)
+3. If token exists: call `GET /api/auth/me` with it
+4. If 200: hydrate Zustand auth store (session + status: 'authenticated')
+5. If 401: clear store (status: 'anonymous')
+6. If network error: fail-open (status: 'anonymous', user can still browse)
+7. Render actual app only after bootstrap completes (guard on status !== 'bootstrapping')
+
+**Protected Request with 401 Response:**
+
+1. Client sends `GET /api/recipe/:id` with accessToken
+2. Server returns 401 (token expired)
+3. api-client interceptor acquires single-flight lock, calls refresh endpoint
+4. POST /api/auth/refresh with refreshToken
+5. Server returns new accessToken (+ optionally new refreshToken)
+6. Lock released; original request retried with new accessToken
+7. If refresh fails (401, 4xx): emit auth:logout event, clear store, replace to login screen
+
+## Deep Link Scheme
+
+**Format:** `cookmate://reset?token={token}`
+
+**Handling:**
+
+1. Expo Linking listener detects deep link
+2. Routes to `(auth)/reset-password` screen
+3. ResetPasswordScreen extracts token from route params
+4. Pre-fills token field, user enters password
+5. Submits to `POST /api/auth/reset-password`
+
 ## Data Flow
 
 1. Mobile app sends HTTP request to `/api/*` with optional `X-API-Key` header and/or `Authorization: Bearer {jwt}`

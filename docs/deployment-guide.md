@@ -138,6 +138,57 @@ MAX_UPLOAD_SIZE=10485760  # 10MB
 CORS_ALLOWED_ORIGINS=https://cookmate.com,https://app.cookmate.com
 ```
 
+### Environment Variables (Phase 3.5: Password Reset + Email)
+
+**Backend (Gmail SMTP):**
+
+```bash
+# Gmail credentials (use app-specific password, not account password)
+GMAIL_USERNAME=your-email@gmail.com
+GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx  # 16-char app password from Google Account
+
+# Email configuration
+MAIL_FROM=noreply@cookmate.com
+MAIL_FROM_NAME=Cookmate
+
+# Password reset configuration
+PASSWORD_RESET_TTL_MINUTES=15                           # Token expiry
+PASSWORD_RESET_BASE_URL=https://app.cookmate.com        # Deep link base URL
+PASSWORD_RESET_RATE_LIMIT_MAX=3                         # Requests per window
+PASSWORD_RESET_RATE_LIMIT_WINDOW_MINUTES=60             # Time window
+```
+
+**Mobile (Google Sign-In):**
+
+```bash
+# Google OAuth credentials from Google Cloud Console
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=xxx.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=xxx.apps.googleusercontent.com
+EXPO_PUBLIC_API_URL=https://api.cookmate.com
+EXPO_PUBLIC_API_KEY=your-api-key-here
+```
+
+### Gmail App Password Setup
+
+1. Enable 2-Step Verification on your Google Account (https://myaccount.google.com/security)
+2. Go to App Passwords (https://myaccount.google.com/apppasswords)
+3. Select "Mail" and "Windows Computer" (or "Other custom name")
+4. Copy the 16-character password (replace spaces when setting env var)
+5. Use `GMAIL_USERNAME` (email) + `GMAIL_APP_PASSWORD` (16-char) in `.env`
+
+### Google OAuth Setup
+
+1. Create a project in Google Cloud Console (https://console.cloud.google.com)
+2. Enable Google+ API
+3. Create OAuth 2.0 credentials:
+   - **Web Client ID**: For backend validation
+   - **iOS Client ID**: For native Google Sign-In on iOS
+   - **Android Client ID**: For native Google Sign-In on Android
+4. Download `GoogleService-Info.plist` (iOS) and `google-services.json` (Android)
+5. Place files in `backend/src/main/resources/` (or appropriate android/ios directories)
+6. Replace `iosUrlScheme` placeholder in `apps/mobile/app.json` with reversed iOS client ID
+7. Run `pnpm mobile:prebuild` before building on-device
+
 ### Load Configuration
 
 **application-dev.yml:**
