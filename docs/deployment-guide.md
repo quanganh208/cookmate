@@ -138,6 +138,68 @@ MAX_UPLOAD_SIZE=10485760  # 10MB
 CORS_ALLOWED_ORIGINS=https://cookmate.com,https://app.cookmate.com
 ```
 
+### Environment Variables (Phase 3.5: Password Reset + Email)
+
+All env vars live in a single root `.env` file. The mobile app loads it via
+`apps/mobile/app.config.js` and the backend loads it via `scripts/run-mvnw.js` before the
+JVM starts — no per-app env file is needed.
+
+**Backend-only secrets (never prefix with `EXPO_PUBLIC_`):**
+
+```bash
+# Gmail credentials — use an App Password, not your Google account password
+GMAIL_USERNAME=your-email@gmail.com
+GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx  # 16-char app password from Google Account
+
+# Email sender identity (shown in "From" header)
+MAIL_FROM=noreply@cookmate.com
+MAIL_FROM_NAME=Cookmate
+```
+
+The password reset token TTL, deep-link base URL, and rate-limit window are intentionally
+hard-coded in `backend/src/main/resources/application.yml` under `app.password-reset.*`. They
+are internal knobs, not per-deployment tuning — override them by editing the YAML file if you
+really need different values for a given environment.
+
+**Shared (both backend Spring `application.yml` and Expo read these by the same name):**
+
+```bash
+# API key — backend validates X-API-Key header, mobile sends it on every request
+EXPO_PUBLIC_API_KEY=your-api-key-here
+
+# Google OAuth web client ID — backend verifies ID token audience, mobile requests with it
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=xxx.apps.googleusercontent.com
+```
+
+**Mobile-only:**
+
+```bash
+EXPO_PUBLIC_API_URL=https://api.cookmate.com
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=xxx.apps.googleusercontent.com
+```
+
+### Gmail App Password Setup
+
+1. Enable 2-Step Verification on your Google Account (https://myaccount.google.com/security)
+2. Go to App Passwords (https://myaccount.google.com/apppasswords)
+3. Select "Mail" and "Windows Computer" (or "Other custom name")
+4. Copy the 16-character password (replace spaces when setting env var)
+5. Use `GMAIL_USERNAME` (email) + `GMAIL_APP_PASSWORD` (16-char) in `.env`
+
+### Google OAuth Setup
+
+1. Create a project in Google Cloud Console (https://console.cloud.google.com) and enable the OAuth consent screen
+2. Create three OAuth 2.0 client IDs under **APIs & Services → Credentials**:
+   - **Web application** → used as the token audience the backend verifies against. Set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (shared with backend via root `.env`).
+   - **iOS** → Bundle ID `com.cookmate.app`. Set `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`. Copy the generated **iOS URL scheme** (reversed client ID) into the `iosUrlScheme` field of `apps/mobile/app.config.js` under the Google Sign-In plugin.
+   - **Android** → Package name `com.cookmate.app` + SHA-1 fingerprint of the signing cert. Get the debug SHA-1 with:
+     ```bash
+     keytool -list -v -keystore ~/.android/debug.keystore \
+       -alias androiddebugkey -storepass android -keypass android | grep SHA1
+     ```
+     The Android SDK auto-resolves the client at runtime via package + SHA-1 — no client ID env var, no `google-services.json` file (we don't use Firebase).
+3. Run `pnpm mobile:prebuild` after editing `app.config.js` so the iOS URL scheme is injected into `Info.plist`.
+
 ### Load Configuration
 
 **application-dev.yml:**

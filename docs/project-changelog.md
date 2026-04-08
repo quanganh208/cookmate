@@ -8,10 +8,73 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Planned
 
-- Phase 3.5: Mobile authentication UI (login/register screens, token persistence)
 - Phase 4: Recipe CRUD and search features
 - Phase 5: Social features (followers, ratings, comments)
 - Phase 6: AI-powered recipe suggestions
+
+## [0.3.0] — 2026-04-07
+
+### Added (Mobile Authentication UI + Backend Password Reset)
+
+**Backend:**
+
+- `POST /api/auth/forgot-password` — Initiate password reset with email delivery
+- `POST /api/auth/reset-password` — Complete password reset with token validation
+- `PasswordResetService` — SHA-256 token hashing, 15-minute TTL, one-time used flag, in-memory rate limiting (3/hour/email)
+- `EmailService` — Async Gmail SMTP delivery with HTML templates (@Async fail-open)
+- `PasswordResetToken` model with MongoDB TTL index (auto-cleanup 15m)
+- Password reset success revokes ALL user refresh tokens (force re-login everywhere)
+- @EnableAsync annotation for async email processing
+
+**Mobile:**
+
+- Auth feature module with 8 endpoints (login, register, google, refresh, me, logout, forgot-password, reset-password)
+- Zustand auth store with session state + bootstrap status (bootstrapping/authenticated/anonymous)
+- Login/register screens with Zod form validation + react-hook-form
+- Forgot/reset password screens with email + token validation flows
+- Google Sign-In integration with native credentials
+- 8 auth components (AuthFormField, AuthSubmitButton, AuthHeader, AuthErrorBanner, GoogleSignInButton, LoginPromptCard, AuthGate, AuthFooterLink)
+- Token storage: SecureStore (Keychain/Keystore) for refresh token; memory + SecureStore for access token
+- Single-flight 401 refresh interceptor with auto-retry on Bearer token expiry
+- Automatic logout on refresh token expiration + auth:logout event pub-sub
+- Protected route gates via AuthGate wrapper + useRequireAuth hook
+- Root layout bootstrap: hydrate session from SecureStore, call /auth/me, gate render on completion
+- Feature gating: Favorites/Create screens wrapped in AuthGate; Profile with LoginPromptCard for guests
+- Deep link support: `cookmate://reset?token=xxx` for password reset links
+- Error mapper: backend error codes → English user messages (e.g. BAD_CREDENTIALS → "Incorrect email or password")
+
+**Mobile Dependencies:**
+
+- `expo-secure-store` — Keychain/Keystore token storage
+- `@react-native-google-signin/google-signin` — Native Google Sign-In
+- `react-hook-form` — Form state management
+- `zod` — Schema validation
+- `@hookform/resolvers` — Form validation integration
+
+**Backend Dependencies:**
+
+- `spring-boot-starter-mail` — Email sending via SMTP
+
+### Changed (Error Code Wire Format)
+
+**AuthException Refactor:**
+
+- New semantic `code` field (BAD_CREDENTIALS, EMAIL_TAKEN, INVALID_TOKEN, OAUTH_ONLY, EMAIL_EXISTS_WITH_PASSWORD, RESET_TOKEN_INVALID, RESET_TOKEN_EXPIRED, RESET_RATE_LIMITED)
+- `ApiResponse.error.code` now returns semantic code instead of HTTP status name
+- `GlobalExceptionHandler` updated to use `ex.getCode()` for AuthException responses
+- Wire-format change may affect API consumers — verify error.code mapping
+
+### Verified
+
+- Mobile: 18/18 tests passing (api-client single-flight, auth error mapper)
+- Backend: 61/61 tests passing (9 new PasswordResetServiceTest, 3 new EmailServiceTest, 5 new AuthControllerIntegrationTest)
+- All endpoints functional: forgot-password, reset-password, refresh with 401 retry
+
+### Known Risks (Accepted MVP Trade-offs)
+
+- Concurrent reset race on `used` flag — read-check-write, not atomic findAndModify (documented in risk register)
+- Universal links not set up — reset link uses `cookmate://` custom scheme only
+- Google Sign-In native creds require manual setup (iosUrlScheme placeholder in apps/mobile/app.config.js)
 
 ## [0.2.2] — 2026-03-24
 
@@ -300,7 +363,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 | 0.1.0   | 2026-03-06   | Foundation     | Monorepo, mobile + backend scaffolds, Docker dev env        |
 | 0.1.1   | 2026-03-06   | CI Integration | Jest tests, Checkstyle, Docker build, multi-stage caching   |
 | 0.2.0   | 2026-03-24   | Auth           | User registration, JWT + refresh tokens, Google OAuth, RBAC |
-| 0.3.0   | TBD          | Recipes        | Recipe CRUD, search, ingredients, images                    |
+| 0.2.2   | 2026-03-24   | API Envelope   | Unified ApiResponse format, auth error codes                |
+| 0.3.0   | 2026-04-07   | Mobile Auth    | Mobile auth UI, password reset, email delivery, token mgmt  |
+| 0.4.0   | TBD          | Recipes        | Recipe CRUD, search, ingredients, images                    |
 | 1.0.0   | TBD          | Release        | Full feature set, production ready                          |
 
 ## Notes for Contributors

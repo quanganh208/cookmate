@@ -38,6 +38,7 @@ class AuthServiceTest {
     @Mock private JwtTokenProvider jwtTokenProvider;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private GoogleOAuthService googleOAuthService;
+    @Mock private PasswordResetService passwordResetService;
 
     @InjectMocks private AuthService authService;
 

@@ -1,7 +1,7 @@
 # Cookmate Development Roadmap
 
 **Status:** Living document. Updated as phases progress.
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-04-07
 
 ## Phase Overview
 
@@ -11,7 +11,8 @@
 | Phase 2   | Home Screen UI (5-tab nav, home layout, components)                        | Complete | 2026-03-20 | Phase 1      |
 | Phase 2.5 | Mobile Restructure (feature-based architecture, state management, offline) | Complete | 2026-03-21 | Phase 2      |
 | Phase 3   | Authentication (user registration, JWT, profile)                           | Complete | 2026-03-24 | Phase 2.5    |
-| Phase 4   | Recipes (CRUD, ingredients, steps, images, search)                         | Planned  | 2026-06-30 | Phase 3      |
+| Phase 3.5 | Mobile Authentication UI + Backend Password Reset                          | Complete | 2026-04-07 | Phase 3      |
+| Phase 4   | Recipes (CRUD, ingredients, steps, images, search)                         | Planned  | 2026-06-30 | Phase 3.5    |
 | Phase 5   | Social (follow, like, bookmark, comments, ratings)                         | Planned  | 2026-08-31 | Phase 4      |
 | Phase 6   | AI Features (suggestions, nutrition, meal planning)                        | Planned  | 2026-10-31 | Phase 4, 5   |
 
@@ -64,15 +65,38 @@
 - User model with email uniqueness, OAuth provider tracking
 - Role-based access control (RBAC) with USER/ADMIN roles
 
-**Mobile (Planned in Phase 3.5):**
+### Phase 3.5: Mobile Authentication + Backend Password Reset (Complete)
 
-- Auth repository abstraction layer
-- Login/register screens with form validation
-- JWT token persistence in secure storage
-- Automatic token refresh on expiry
-- Protected route guards
-- User profile screen integration
-- Logout functionality
+**Backend:**
+
+- Password reset endpoints: `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`
+- PasswordResetService with SHA-256 token hashing, 15-minute TTL, one-time used flag
+- EmailService with async Gmail SMTP delivery, HTML email templates
+- PasswordResetToken model with MongoDB TTL index
+- In-memory rate limiting (3 requests per hour per email, lowercase-normalized)
+- Password reset success revokes all user refresh tokens (force re-login everywhere)
+- AuthException refactor: semantic error codes (RESET_TOKEN_INVALID, RESET_TOKEN_EXPIRED, RESET_RATE_LIMITED)
+- Wire-format change: error.code field now semantic instead of HTTP status name
+
+**Mobile:**
+
+- Auth feature module with 8 endpoints (login, register, google, refresh, me, logout, forgot-password, reset-password)
+- Zustand auth store with session state + bootstrap status
+- Login/register screens with Zod form validation + react-hook-form
+- Forgot/reset password screens with email + token validation flows
+- Google Sign-In integration with native credentials
+- 8 auth components: AuthFormField, AuthSubmitButton, AuthHeader, AuthErrorBanner, GoogleSignInButton, LoginPromptCard, AuthGate, AuthFooterLink
+- Auth repository abstraction (8 endpoints via api-client)
+- Token storage: access token in memory + SecureStore, refresh token SecureStore-only
+- SecureToken storage wrapper for expo-secure-store (Keychain on iOS, Keystore on Android)
+- Single-flight 401 refresh interceptor with auto-retry
+- Automatic logout on refresh token expiration + auth:logout event
+- protected route guards via AuthGate wrapper + useRequireAuth hook
+- Root layout bootstrap: hydrate session from SecureStore, call /auth/me, gate render on completion
+- Feature gating: Favorites/Create screens + Profile login prompt
+- Deep link support: `cookmate://reset?token=xxx` route handling
+- Error mapper: backend error codes → English user messages
+- 18/18 mobile tests passing; 61/61 backend tests passing
 
 ### Phase 4: Recipes
 
@@ -119,7 +143,6 @@
 
 ## Open Questions
 
-- Phase 3.5: Mobile authentication UI implementation timeline
 - Phase 4: Image storage solution (S3, Firebase, Cloudinary)
 - Phase 5: Analytics and monitoring platform
 - Phase 6: AI provider selection (OpenAI, Anthropic, open-source)
