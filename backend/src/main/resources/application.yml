@@ -3,7 +3,7 @@ spring:
     name: cookmate
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/cookmate}
+      uri: mongodb://localhost:27017/cookmate
 
 server:
   port: 8080
