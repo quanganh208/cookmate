@@ -4,8 +4,8 @@
   "packageManager": "pnpm@10.7.0",
   "scripts": {
     "dev": "docker compose up -d mongodb && pnpm backend",
-    "backend": "cd backend && mvnw.cmd spring-boot:run",
-    "backend:test": "cd backend && mvnw.cmd clean verify",
+    "backend": "node scripts/run-mvnw.js spring-boot:run",
+    "backend:test": "node scripts/run-mvnw.js clean verify",
     "mobile": "pnpm --filter mobile start",
     "mobile:prebuild": "pnpm --filter mobile prebuild",
     "mobile:android": "pnpm --filter mobile android",
