@@ -121,8 +121,27 @@
 - 28/28 mobile tests passing (18 existing + 10 new); 63/63 backend tests passing (61 existing + 2 new)
 - Branch: `feat/phase-4-1-recipe-detail`
 
-**Slices 4.2–4.4 (Planned):** Search endpoint + screen · Create Recipe + R2 upload + janitor ·
-Favorites (Collection-based).
+**Slice 4.2 — Search (Complete):**
+
+- BE: `GET /api/recipes/search?q=&page=&size=` returns `Page<RecipeResponse>` sorted by text score
+- `RecipeRepositoryCustom` + `Impl` uses `MongoTemplate` + `TextQuery.sortByScore()` (Spring Data
+  derived queries can't express this)
+- `MongoIndexMigration` @PostConstruct drops stale text index if default_language differs from
+  `"none"` and recreates with `language:"none"` to support Vietnamese + mixed-locale titles
+- `SlidingWindowRateLimiter` (in-memory, ConcurrentHashMap+Deque) — same pattern as Phase 3.5
+  password-reset; 60 req/min/user (or IP when anon) on `/search`
+- Global `PageableHandlerMethodArgumentResolver` caps `size` at 50
+- `GlobalExceptionHandler` now handles `IllegalArgumentException` + `ConstraintViolationException`
+  → 400, `RateLimitedException` → 429
+- Mobile: debounced (300ms) search screen with state machine (idle/loading/error/empty/results),
+  `useInfiniteQuery` with `enabled: q.trim().length > 0`, recent searches in MMKV (per-user key
+  `search.recent.${userId}`, cap 10, case-insensitive dedup, corruption-safe read, auto-cleared
+  on logout)
+- `app.config.js`: `android.allowBackup=false` (prevents MMKV backup to Google Drive)
+- 43/43 mobile tests (31 previous + 12 new), 69/69 backend tests (63 previous + 6 new)
+- Branch: `feat/phase-4-2-search`
+
+**Slices 4.3–4.4 (Planned):** Create Recipe + R2 upload + janitor · Favorites (Collection-based).
 
 ### Phase 5: Social
 

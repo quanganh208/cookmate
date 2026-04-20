@@ -6,6 +6,55 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added (Phase 4 Slice 4.2 — Full-Text Recipe Search)
+
+**Backend:**
+
+- `GET /api/recipes/search?q=<query>&page=0&size=20` — public full-text search over title +
+  description, returns `Page<RecipeResponse>` sorted by text score.
+- `RecipeRepositoryCustom` + `RecipeRepositoryCustomImpl` — `MongoTemplate`-backed `searchByText`
+  using `TextCriteria.forLanguage("none")` + `TextQuery.sortByScore()` (Spring Data derived queries
+  can't build sort-by-text-score).
+- `MongoIndexMigration` — `@PostConstruct` reconciler that drops the stale auto-created text index
+  if `default_language` differs from `"none"` and recreates it correctly (supports Vietnamese +
+  mixed-locale titles).
+- `SlidingWindowRateLimiter` + `RecipeSearchRateLimiter` — in-memory sliding-window rate limit
+  (60 req/min/user, or IP when unauthenticated). Same pattern as Phase 3.5 password-reset.
+  `RateLimitedException` + handler → 429 `RATE_LIMITED`.
+- Global page-size cap: `WebConfig.addArgumentResolvers` registers
+  `PageableHandlerMethodArgumentResolver` with `setMaxPageSize(50)` — prevents `?size=10000` DoS
+  on any pageable endpoint.
+- `GlobalExceptionHandler` now maps `IllegalArgumentException` +
+  `ConstraintViolationException` → 400 `BAD_REQUEST`.
+
+**Mobile:**
+
+- Search feature: `searchRepository`, `useRecipesSearch` (infinite query, `enabled` on non-empty
+  trimmed `q`), `useRecentSearches` (MMKV, per-user keyed, corruption-safe), pure helpers
+  `dedupAndCap` + `keyFor` + `readAll` for testing.
+- `useDebouncedValue<T>` generic trailing-edge debounce in `shared/hooks/` (300ms default).
+- Search screen rewritten from stub into full state machine: idle (`RecentSearchesList`) / loading /
+  error (`ErrorView` with retry) / empty (`SearchEmptyState`) / results
+  (`SearchResultsGrid` + infinite scroll). Auto-focus input with clear button; pressing Enter or
+  tapping a recent entry persists it to MMKV.
+- `RecentSearchesList`, `SearchEmptyState`, `SearchResultsGrid` components.
+- Recent searches scoped by `userId` — switching accounts or logging out clears the prior bucket.
+
+**App config:**
+
+- `android.allowBackup=false` in `app.config.js` — prevents MMKV (recent searches, query cache)
+  from being backed up to Google Drive and restored onto a different device / user.
+
+**Testing:**
+
+- New mobile unit tests: `search-repository.test.ts` (URL encoding, pagination defaults),
+  `use-recent-searches.test.ts` (pure helpers: dedup+cap, key scoping, corrupt-payload recovery).
+  Hook-rendering tests skipped due to `react-test-renderer` version pin mismatch between
+  `jest-expo` and `@testing-library/react-native`; pure helpers cover the logic.
+- New backend: `RecipeSearchIntegrationTest` (6 cases: Vietnamese match, English match, empty
+  400, pagination, page-size cap 50, rate-limit 429).
+- 43/43 mobile tests (up from 31 after 4.1); 69/69 backend tests (up from 63 after 4.1).
+
 ### Added (Phase 4 Slice 4.1 — Recipe Detail + Wire Format Alignment)
 
 **Mobile:**

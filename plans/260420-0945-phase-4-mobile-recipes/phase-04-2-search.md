@@ -11,7 +11,7 @@
 ## Overview
 
 - **Priority**: P1
-- **Status**: pending (blocked by Slice 1)
+- **Status**: complete (2026-04-20)
 - **Estimate**: 2–3 days
 - **Description**: Add `GET /api/recipes/search?q=&page=&size=` using MongoDB `$text` full-text on title+description. Ship mobile search screen with debounced input, recent searches (MMKV), infinite scroll results, empty/error/loading states.
 
@@ -27,19 +27,19 @@
 
 ### Functional
 
-- [ ] `GET /api/recipes/search?q=<query>&page=0&size=20` returns `Page<RecipeResponse>`
-- [ ] Empty/blank `q` → 400 Bad Request
-- [ ] Mobile search screen: text input + X clear button
-- [ ] Debounced query (300ms) triggers `useInfiniteQuery`
-- [ ] State machine: idle (recent searches) → loading → results-grid OR empty-results OR error
-- [ ] Recent searches: last 10 queries persisted in MMKV; tap to re-run; clear-all button
-- [ ] Results grid reuses `RecipeCardCompact`; infinite scroll same pattern as home
+- [x] `GET /api/recipes/search?q=<query>&page=0&size=20` returns `Page<RecipeResponse>`
+- [x] Empty/blank `q` → 400 Bad Request
+- [x] Mobile search screen: text input + X clear button
+- [x] Debounced query (300ms) triggers `useInfiniteQuery`
+- [x] State machine: idle (recent searches) → loading → results-grid OR empty-results OR error
+- [x] Recent searches: last 10 queries persisted in MMKV; tap to re-run; clear-all button
+- [x] Results grid reuses `RecipeCardCompact`; infinite scroll same pattern as home
 
 ### Non-Functional
 
-- [ ] Search response <500ms on dev MongoDB with seeded data
-- [ ] Debounce correctly cancels in-flight stale queries (TanStack Query `keepPreviousData`)
-- [ ] No regression: 61/61 backend tests + 18/18 + new mobile tests
+- [x] Search response <500ms on dev MongoDB with seeded data
+- [x] Debounce correctly cancels in-flight stale queries (TanStack Query `keepPreviousData`)
+- [x] No regression: 61/61 backend tests + 18/18 + new mobile tests
 
 ## Architecture
 
@@ -146,37 +146,37 @@ User types → TextInput onChangeText
 
 ## Todo List
 
-- [ ] Prereq: verify CI Docker/Mongo setup for integration tests; add setup commits if missing
-- [ ] BE: `RecipeRepositoryCustom` + `RecipeRepositoryCustomImpl` with `MongoTemplate.find` + `TextQuery.sortByScore()`
-- [ ] BE: `RecipeRepository extends MongoRepository, RecipeRepositoryCustom`
-- [ ] BE: `MongoIndexMigration` `@PostConstruct` — drop stale text index if language mismatch
-- [ ] BE: `RecipeService.searchByText` with blank-q validation
-- [ ] BE: `RecipeController.search` endpoint with `@NotBlank @Size(1,200)` on q
-- [ ] BE: Pageable max-size cap (50) via resolver
-- [ ] BE: Bucket4j 60 req/min rate limit on `/search`
-- [ ] BE: verify Recipe `@TextIndexed(language = "none")`
-- [ ] BE: `RecipeSearchIntegrationTest` (happy, empty, pagination, oversize page rejected, rate-limit)
-- [ ] Mobile: `use-debounced-value.ts` + test
-- [ ] Mobile: `search-repository.ts` + test
-- [ ] Mobile: `use-recent-searches.ts` + test (MMKV) — per-user key, keystore-derived cryptKey, logout clear, corruption-safe read
-- [ ] Mobile: `use-recipes-search.ts` (infinite query)
-- [ ] Mobile: `RecentSearchesList` component
-- [ ] Mobile: `SearchResultsGrid` component
-- [ ] Mobile: `SearchEmptyState` component
-- [ ] Mobile: rewrite `search-screen.tsx`
-- [ ] Mobile: `search-screen.test.tsx` smoke
-- [ ] Lint + tests all green
-- [ ] Commit: `feat(search): add full-text recipe search BE + mobile screen`
+- [x] Prereq: verify CI Docker/Mongo setup for integration tests; add setup commits if missing
+- [x] BE: `RecipeRepositoryCustom` + `RecipeRepositoryCustomImpl` with `MongoTemplate.find` + `TextQuery.sortByScore()`
+- [x] BE: `RecipeRepository extends MongoRepository, RecipeRepositoryCustom`
+- [x] BE: `MongoIndexMigration` `@PostConstruct` — drop stale text index if language mismatch
+- [x] BE: `RecipeService.searchByText` with blank-q validation
+- [x] BE: `RecipeController.search` endpoint with `@NotBlank @Size(1,200)` on q
+- [x] BE: Pageable max-size cap (50) via resolver
+- [x] BE: Bucket4j 60 req/min rate limit on `/search`
+- [x] BE: verify Recipe `@TextIndexed(language = "none")`
+- [x] BE: `RecipeSearchIntegrationTest` (happy, empty, pagination, oversize page rejected, rate-limit)
+- [x] Mobile: `use-debounced-value.ts` + test
+- [x] Mobile: `search-repository.ts` + test
+- [x] Mobile: `use-recent-searches.ts` + test (MMKV) — per-user key, keystore-derived cryptKey, logout clear, corruption-safe read
+- [x] Mobile: `use-recipes-search.ts` (infinite query)
+- [x] Mobile: `RecentSearchesList` component
+- [x] Mobile: `SearchResultsGrid` component
+- [x] Mobile: `SearchEmptyState` component
+- [x] Mobile: rewrite `search-screen.tsx`
+- [x] Mobile: `search-screen.test.tsx` smoke
+- [x] Lint + tests all green
+- [x] Commit: `feat(search): add full-text recipe search BE + mobile screen`
 
 ## Success Criteria
 
-- [ ] Type "pho" → results include "Phở" within 500ms of settled debounce
-- [ ] Empty q → shows recent searches; tap recent → re-run
-- [ ] No results → empty state shown
-- [ ] Offline → error state with retry
-- [ ] Recent searches persist across app restart
-- [ ] 61 BE + new search test pass; 18 mobile + new tests pass
-- [ ] Lint clean
+- [x] Type "pho" → results include "Phở" within 500ms of settled debounce
+- [x] Empty q → shows recent searches; tap recent → re-run
+- [x] No results → empty state shown
+- [x] Offline → error state with retry
+- [x] Recent searches persist across app restart
+- [x] 61 BE + new search test pass; 18 mobile + new tests pass
+- [x] Lint clean
 
 ## Risk Assessment
 
