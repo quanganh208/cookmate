@@ -36,8 +36,12 @@ public class RecipeController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get recipe by id")
-    public ResponseEntity<ApiResponse<RecipeResponse>> findById(@PathVariable String id) {
-        recipeService.incrementViewCount(id);
+    public ResponseEntity<ApiResponse<RecipeResponse>> findById(
+            @PathVariable String id,
+            @RequestParam(name = "view", defaultValue = "true") boolean view) {
+        if (view) {
+            recipeService.incrementViewCount(id);
+        }
         return ResponseEntity.ok(ApiResponse.ok(recipeService.findByIdWithAuthor(id)));
     }
 
