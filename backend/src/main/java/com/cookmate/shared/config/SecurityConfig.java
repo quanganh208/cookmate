@@ -89,6 +89,9 @@ public class SecurityConfig {
                                         // matcher FIRST so it wins over the broader rule below.
                                         .requestMatchers("/api/collections/favorites/**")
                                         .authenticated()
+                                        // Uploads are per-user — JWT required.
+                                        .requestMatchers("/api/uploads/**")
+                                        .authenticated()
                                         .requestMatchers(HttpMethod.GET, "/api/collections/**")
                                         .permitAll()
                                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/")

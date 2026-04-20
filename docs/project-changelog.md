@@ -6,6 +6,64 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added (Phase 4 Slice 4.3a — R2 Image Upload Backend)
+
+**Backend:**
+
+- `POST /api/uploads/image` — multipart proxy to Cloudflare R2. JWT required, 20 req/hour/user,
+  5 MB size cap, content-based MIME whitelist (JPEG / PNG / WebP only, SVG permanently excluded).
+- Content detection via Apache Tika on the raw bytes — never trusts client `Content-Type`.
+- `ImageIO` round-trip re-encode strips EXIF metadata and defeats polyglot files
+  (`GIF89a<?php ?>` and similar). Rejected as 415 when `ImageIO.read` returns null.
+- `X-Upload-Id` header idempotency: a retry with the same id returns the cached URL without
+  a second R2 PUT — no duplicate objects on network flake.
+- `R2Config` / `R2Service` — AWS S3 SDK v2 pointed at Cloudflare R2 endpoint. No ACL param
+  (R2 doesn't honour S3 canned ACLs; public access is bucket-level via `pub-*.r2.dev`).
+  Object metadata attaches `Content-Disposition: attachment` + `X-Content-Type-Options: nosniff`.
+- `PendingUpload` model + repository — tracks each upload until its URL is linked to a recipe.
+- `UploadJanitor` @Scheduled cron (03:00 daily): deletes R2 objects + rows where
+  `linkedToRecipeId IS NULL AND uploadedAt < now - 24h`. `@EnableScheduling` on the app.
+- `UploadRateLimiter` — 20 req/hour/user, reuses `SlidingWindowRateLimiter` helper.
+- `RecipeService.create` now: validates `imageUrl` matches the configured R2 public URL prefix
+  (SSRF / hotlink block), verifies the associated `PendingUpload` belongs to the author, and
+  links the upload to the new recipe id.
+- `RecipeService.delete` calls `R2Service.deleteObject` + deletes the pending-upload row so
+  images don't accumulate.
+- `CreateRecipeRequest` hardened: `@Pattern` on `difficulty` (`EASY|MEDIUM|HARD`) and `status`
+  (`DRAFT|PUBLISHED|ARCHIVED`), `@Size(max=200)` on title, `@Size(max=500)` on description,
+  `@Size(max=50)` on cuisine/category, `@PositiveOrZero` on serving/prepTime/cookTime.
+- `IngredientSeeder` `CommandLineRunner` — per-item `mongoTemplate.upsert` keyed by name;
+  idempotent on rolling restart, race-safe across concurrent-boot instances. Reads from
+  `backend/src/main/resources/seed/ingredients.json` (130 curated Vietnamese + international
+  staples). `Ingredient.name` already has `@Indexed(unique = true)`.
+- Multipart caps in `application.yml`: max 5 MB file / 6 MB request, `file-size-threshold=0`
+  forces disk buffering (no OOM under concurrent uploads).
+- `SecurityConfig`: `/api/uploads/**` requires JWT.
+- `GlobalExceptionHandler` now routes `ResponseStatusException` through the `ApiResponse`
+  envelope so upload 415/413 responses match the rest of the API shape.
+
+**App config:**
+
+- `.env.example` gains 5 R2 stubs (`R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`,
+  `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_URL`). Real values live in `.env` (gitignored) and
+  GitHub Actions secrets.
+- `application.yml` R2 block uses harmless placeholder defaults so the app + tests don't fail
+  fast at boot when R2 isn't configured — first real upload call is the clear failure point.
+
+**Testing:**
+
+- `UploadControllerIntegrationTest` — 6 cases with a mocked `S3Client` (no Testcontainers):
+  valid PNG persists + returns public URL, same `X-Upload-Id` retry is idempotent,
+  unauthenticated 401, SVG 415, polyglot GIF/PHP 415, rate-limit 429.
+- `IngredientSeederTest` — 3 cases: empty collection seeds ≥100 rows, second run is a no-op,
+  partial pre-populated collection only gets missing items inserted.
+- 94/94 backend tests passing (85 → 94 after Slice 4.3a).
+
+**Not yet shipped (Slice 4.3b, next PR):**
+
+- Mobile create-recipe form (image picker, resize with EXIF rotation, RHF + Zod schema,
+  ingredient autocomplete, submit flow).
+
 ### Added (Phase 4 Slice 4.4 — Favorites)
 
 **Backend:**

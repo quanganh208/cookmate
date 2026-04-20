@@ -16,6 +16,16 @@ spring:
           starttls:
             enable: true
             required: true
+  servlet:
+    multipart:
+      # Upload endpoint (/api/uploads/image) accepts up to 5 MB images. max-request-size has
+      # 1 MB of headroom for multipart boundary overhead.
+      max-file-size: 5MB
+      max-request-size: 6MB
+      # Force disk buffering so Tomcat doesn't hold multipart bodies in heap — prevents OOM
+      # under concurrent uploads.
+      file-size-threshold: 0
+      location: ${java.io.tmpdir}
 
 server:
   port: 8080
@@ -45,6 +55,19 @@ app:
     rate-limit:
       max-requests: 3
       window-minutes: 60
+  # Cloudflare R2 image storage. Provisioned per-deployment in .env; defaults below are
+  # harmless placeholders so tests (and dev runs without R2 configured) don't fail at boot.
+  # R2Service.putObject/deleteObject will throw at first real call if creds are still defaults.
+  r2:
+    endpoint: ${R2_ENDPOINT:http://localhost:9000}
+    bucket: ${R2_BUCKET:cookmate-test}
+    access-key-id: ${R2_ACCESS_KEY_ID:dev-access-key}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY:dev-secret-key}
+    public-url: ${R2_PUBLIC_URL:http://localhost:9000/cookmate-test}
+  upload:
+    rate-limit:
+      max-requests: 20
+      window-seconds: 3600
 
 management:
   endpoints:
