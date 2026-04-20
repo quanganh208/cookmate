@@ -12,7 +12,7 @@
 ## Overview
 
 - **Priority**: P1
-- **Status**: pending (blocked by Slice 1 + R2 prerequisite)
+- **Status**: complete (2026-04-20) — shipped as 4.3a (backend, PR #7) + 4.3b (mobile, PR #8). Real-R2 smoke test verified.
 - **Estimate**: 5–7 days (heaviest slice)
 - **Description**: Ship BE `POST /api/uploads/image` (multipart proxy → Cloudflare R2). Ship mobile create-recipe form (react-hook-form + Zod) with image picker, client resize, ingredient autocomplete, dynamic steps/ingredients arrays, publish/draft toggle. Seed ingredient catalog (100–200 items).
 

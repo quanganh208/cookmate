@@ -35,7 +35,7 @@ D1 vertical slices · D2 Detail→Search→Create→Saved · D3 Cloudflare R2 ·
 | --- | ------------------------------------ | ------------------------------------------------------------------------ | -------- | -------- |
 | 4.1 | Recipe Detail + wire format fix      | [phase-04-1-recipe-detail.md](phase-04-1-recipe-detail.md)               | 3–5d     | complete |
 | 4.2 | Search (BE endpoint + mobile screen) | [phase-04-2-search.md](phase-04-2-search.md)                             | 3–4d     | complete |
-| 4.3 | Create Recipe + R2 Upload + janitor  | [phase-04-3-create-recipe-upload.md](phase-04-3-create-recipe-upload.md) | 7–9d     | pending  |
+| 4.3 | Create Recipe + R2 Upload + janitor  | [phase-04-3-create-recipe-upload.md](phase-04-3-create-recipe-upload.md) | 7–9d     | complete |
 | 4.4 | Favorites (Collection-based)         | [phase-04-4-favorites.md](phase-04-4-favorites.md)                       | 3–4d     | complete |
 
 ## Dependencies

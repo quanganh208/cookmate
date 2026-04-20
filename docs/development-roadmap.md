@@ -1,20 +1,20 @@
 # Cookmate Development Roadmap
 
 **Status:** Living document. Updated as phases progress.
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-20 (Phase 4 complete)
 
 ## Phase Overview
 
-| Phase     | Description                                                                | Status      | Target     | Dependencies |
-| --------- | -------------------------------------------------------------------------- | ----------- | ---------- | ------------ |
-| Phase 1   | Foundation (monorepo, mobile skeleton, backend skeleton, Docker)           | Complete    | 2026-03-06 | —            |
-| Phase 2   | Home Screen UI (5-tab nav, home layout, components)                        | Complete    | 2026-03-20 | Phase 1      |
-| Phase 2.5 | Mobile Restructure (feature-based architecture, state management, offline) | Complete    | 2026-03-21 | Phase 2      |
-| Phase 3   | Authentication (user registration, JWT, profile)                           | Complete    | 2026-03-24 | Phase 2.5    |
-| Phase 3.5 | Mobile Authentication UI + Backend Password Reset                          | Complete    | 2026-04-07 | Phase 3      |
-| Phase 4   | Recipes (CRUD, ingredients, steps, images, search)                         | In Progress | 2026-06-30 | Phase 3.5    |
-| Phase 5   | Social (follow, like, bookmark, comments, ratings)                         | Planned     | 2026-08-31 | Phase 4      |
-| Phase 6   | AI Features (suggestions, nutrition, meal planning)                        | Planned     | 2026-10-31 | Phase 4, 5   |
+| Phase     | Description                                                                | Status   | Target     | Dependencies |
+| --------- | -------------------------------------------------------------------------- | -------- | ---------- | ------------ |
+| Phase 1   | Foundation (monorepo, mobile skeleton, backend skeleton, Docker)           | Complete | 2026-03-06 | —            |
+| Phase 2   | Home Screen UI (5-tab nav, home layout, components)                        | Complete | 2026-03-20 | Phase 1      |
+| Phase 2.5 | Mobile Restructure (feature-based architecture, state management, offline) | Complete | 2026-03-21 | Phase 2      |
+| Phase 3   | Authentication (user registration, JWT, profile)                           | Complete | 2026-03-24 | Phase 2.5    |
+| Phase 3.5 | Mobile Authentication UI + Backend Password Reset                          | Complete | 2026-04-07 | Phase 3      |
+| Phase 4   | Recipes (CRUD, ingredients, steps, images, search)                         | Complete | 2026-04-20 | Phase 3.5    |
+| Phase 5   | Social (follow, like, bookmark, comments, ratings)                         | Planned  | 2026-08-31 | Phase 4      |
+| Phase 6   | AI Features (suggestions, nutrition, meal planning)                        | Planned  | 2026-10-31 | Phase 4, 5   |
 
 ## Phase Details
 
@@ -98,10 +98,10 @@
 - Error mapper: backend error codes → English user messages
 - 18/18 mobile tests passing; 61/61 backend tests passing
 
-### Phase 4: Recipes (In Progress)
+### Phase 4: Recipes (Complete — 2026-04-20)
 
-4 vertical slices wiring the mobile app to live BE recipe endpoints, adding missing BE endpoints
-(`/api/recipes/search`, `/api/uploads/image`, favorites helpers), and deleting all mobile mock data.
+4 vertical slices shipped across 5 PRs (#4, #5, #6, #7, #8). Mobile fully wired to live backend,
+all mock data deleted, Cloudflare R2 image pipeline verified end-to-end with real credentials.
 
 **Slice 4.1 — Recipe Detail + wire format (Complete):**
 
@@ -145,10 +145,24 @@
 - 48/48 mobile tests passing (43 → 48); 85/85 backend tests passing (69 → 85)
 - Branch: `feat/phase-4-4-favorites`
 
-**Slice 4.3 — Create Recipe + R2 Upload (Deferred):**
+**Slice 4.3 — Create Recipe + R2 Upload (Complete, split into 4.3a + 4.3b):**
 
-Blocked on manual Cloudflare R2 prerequisites (bucket provisioning, API token, public domain,
-GHA secrets). All other Phase 4 slices ship without waiting.
+_4.3a — Backend (PR #7)_: `POST /api/uploads/image` proxy to Cloudflare R2, Apache Tika content
+MIME detection, ImageIO re-encode (EXIF-strip + polyglot defeat), `X-Upload-Id` idempotency,
+20/h/user rate limit, `PendingUpload` + `UploadJanitor` (03:00 daily cron sweeps orphan R2
+objects older than 24h), `RecipeService` hooks (imageUrl validator pinned to R2 public URL
+prefix, pending-upload ownership check, R2 cleanup on recipe delete), hardened
+`CreateRecipeRequest` validators, `IngredientSeeder` with 130 Vietnamese + international
+staples. 9 new backend integration tests (6 upload + 3 seeder).
+
+_4.3b — Mobile (PR #8)_: create-recipe form with `expo-image-picker`, EXIF-orientation-safe
+resize pipeline (1280px/80% JPEG), `useUploadImage` state machine, Zod schema mirroring BE
+validators, `RecipeImagePicker` / `DifficultyPicker` / `StepInput` / `IngredientInput` components,
+ingredient autocomplete (client-side filter over full catalog), Save Draft / Publish submit with
+navigate-to-detail. +12 mobile tests (schema + orientation helper).
+
+_Real-R2 smoke test_: verified 2026-04-20 — upload → public URL opens in browser, idempotency
+confirmed (same `X-Upload-Id` → same URL, no duplicate R2 object), SVG rejected with 415.
 
 **Slice 4.2 — Search (Complete):**
 
