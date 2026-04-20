@@ -85,6 +85,13 @@ public class RecipeService {
         return recipeRepository.findByIsFeaturedTrue(pageable).map(RecipeResponse::from);
     }
 
+    public Page<RecipeResponse> searchByText(String query, Pageable pageable) {
+        if (query == null || query.trim().isEmpty()) {
+            throw new IllegalArgumentException("Search query cannot be blank");
+        }
+        return recipeRepository.searchByText(query.trim(), pageable).map(RecipeResponse::from);
+    }
+
     public RecipeResponse update(String id, UpdateRecipeRequest request, String authorId) {
         Recipe recipe =
                 recipeRepository
