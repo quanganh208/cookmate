@@ -53,6 +53,9 @@ module.exports = ({ config }) => ({
       backgroundColor: '#ffffff',
     },
     package: 'com.cookmate.app',
+    // Prevent MMKV (recent searches, query cache) from being silently backed up
+    // to Google Drive and restored onto a new device / different user.
+    allowBackup: false,
   },
   web: {
     bundler: 'metro',
