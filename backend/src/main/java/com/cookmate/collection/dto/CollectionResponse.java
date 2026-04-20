@@ -20,6 +20,7 @@ public class CollectionResponse {
     private String description;
     private String imageUrl;
     private Boolean isPrivate;
+    private Boolean isSystem;
     private String authorId;
     private List<CollectionEntry> recipeIds;
     private Integer recipeCount;
@@ -33,6 +34,7 @@ public class CollectionResponse {
                 .description(collection.getDescription())
                 .imageUrl(collection.getImageUrl())
                 .isPrivate(collection.getIsPrivate())
+                .isSystem(collection.getIsSystem())
                 .authorId(collection.getAuthorId())
                 .recipeIds(collection.getRecipeIds())
                 .recipeCount(

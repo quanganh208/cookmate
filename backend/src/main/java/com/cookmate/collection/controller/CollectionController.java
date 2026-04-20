@@ -3,9 +3,13 @@ package com.cookmate.collection.controller;
 import com.cookmate.auth.model.User;
 import com.cookmate.collection.dto.CollectionRequest;
 import com.cookmate.collection.dto.CollectionResponse;
+import com.cookmate.collection.dto.ContainsResponse;
 import com.cookmate.collection.dto.RecipeIdRequest;
 import com.cookmate.collection.service.CollectionService;
+import com.cookmate.collection.service.FavoritesRateLimiter;
+import com.cookmate.recipe.dto.RecipeResponse;
 import com.cookmate.shared.dto.ApiResponse;
+import com.cookmate.shared.exception.RateLimitedException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,6 +29,9 @@ import org.springframework.web.bind.annotation.*;
 public class CollectionController {
 
     private final CollectionService collectionService;
+    private final FavoritesRateLimiter favoritesRateLimiter;
+
+    // -- Generic collections --
 
     @PostMapping
     @Operation(summary = "Create a new collection")
@@ -85,5 +92,55 @@ public class CollectionController {
             @PathVariable String id, @AuthenticationPrincipal User user) {
         collectionService.delete(id, user.getId());
         return ResponseEntity.ok(ApiResponse.ok());
+    }
+
+    // -- Favorites (system collection, JWT required) --
+
+    @GetMapping("/favorites")
+    @Operation(summary = "Get (or auto-create) the user's Favorites collection")
+    public ResponseEntity<ApiResponse<CollectionResponse>> getFavorites(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(ApiResponse.ok(collectionService.favoritesFor(user.getId())));
+    }
+
+    @GetMapping("/favorites/recipes")
+    @Operation(summary = "Paginated list of recipes saved to Favorites")
+    public ResponseEntity<ApiResponse<Page<RecipeResponse>>> getFavoritesRecipes(
+            @AuthenticationPrincipal User user, @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(
+                ApiResponse.ok(collectionService.getFavoritesRecipes(user.getId(), pageable)));
+    }
+
+    @PostMapping("/favorites/recipes")
+    @Operation(summary = "Save a recipe to Favorites")
+    public ResponseEntity<ApiResponse<CollectionResponse>> addFavorite(
+            @Valid @RequestBody RecipeIdRequest request, @AuthenticationPrincipal User user) {
+        enforceRateLimit(user.getId());
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                        collectionService.addToFavorites(request.getRecipeId(), user.getId())));
+    }
+
+    @DeleteMapping("/favorites/recipes/{recipeId}")
+    @Operation(summary = "Remove a recipe from Favorites")
+    public ResponseEntity<ApiResponse<Void>> removeFavorite(
+            @PathVariable String recipeId, @AuthenticationPrincipal User user) {
+        enforceRateLimit(user.getId());
+        collectionService.removeFromFavorites(recipeId, user.getId());
+        return ResponseEntity.ok(ApiResponse.ok());
+    }
+
+    @GetMapping("/favorites/contains/{recipeId}")
+    @Operation(summary = "Check whether a recipe is in the user's Favorites")
+    public ResponseEntity<ApiResponse<ContainsResponse>> favoritesContains(
+            @PathVariable String recipeId, @AuthenticationPrincipal User user) {
+        boolean saved = collectionService.favoritesContains(recipeId, user.getId());
+        return ResponseEntity.ok(ApiResponse.ok(ContainsResponse.builder().saved(saved).build()));
+    }
+
+    private void enforceRateLimit(String userId) {
+        if (!favoritesRateLimiter.tryAcquire(userId)) {
+            throw new RateLimitedException("Too many favorites requests — please slow down");
+        }
     }
 }

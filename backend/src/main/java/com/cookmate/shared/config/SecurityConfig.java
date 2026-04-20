@@ -84,6 +84,11 @@ public class SecurityConfig {
                                         .permitAll()
                                         .requestMatchers(HttpMethod.GET, "/api/ingredients/**")
                                         .permitAll()
+                                        // Favorites are per-user and must require JWT even
+                                        // though general /collections GETs are public. Put this
+                                        // matcher FIRST so it wins over the broader rule below.
+                                        .requestMatchers("/api/collections/favorites/**")
+                                        .authenticated()
                                         .requestMatchers(HttpMethod.GET, "/api/collections/**")
                                         .permitAll()
                                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/")

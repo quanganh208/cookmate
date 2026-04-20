@@ -6,6 +6,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added (Phase 4 Slice 4.4 — Favorites)
+
+**Backend:**
+
+- `Collection` model gains `isSystem: boolean` flag + compound unique index on `(authorId, name)`
+  preventing race-created duplicates.
+- `CollectionService.getOrCreateFavorites(userId)` — atomic `findAndModify` upsert with
+  `$setOnInsert`; legacy non-system rows self-heal to `isSystem=true` on read.
+- Unicode-aware reserved-name rejection (`NFKC` + `\p{C}` strip + `Locale.ROOT` lowercase) blocks
+  user-created "Favorites"/"FAVORITES"/" Favourites "/"Fav\u200Borites"/"yêu thích".
+- Delete guard: system collections return 400 on `DELETE /collections/{id}`.
+- `CollectionRequest` DTO doesn't expose `isSystem` — server-set only, blocks client spoof.
+- 5 new endpoints (JWT required, gated in `SecurityConfig`):
+  - `GET /api/collections/favorites` — auto-creates on first call, returns metadata.
+  - `GET /api/collections/favorites/recipes?page=&size=` — paginated `Page<RecipeResponse>`,
+    visibility-filtered (PUBLISHED + own drafts), does NOT increment view count.
+  - `POST /api/collections/favorites/recipes` `{recipeId}` — idempotent add.
+  - `DELETE /api/collections/favorites/recipes/{recipeId}` — idempotent remove.
+  - `GET /api/collections/favorites/contains/{recipeId}` — `{saved: boolean}`.
+- `RecipeRepositoryCustom.findAllByIdInForFavorites` — single batch Mongo query with visibility
+  filter; same enumeration-oracle rule as the add endpoint (other users' drafts → 404).
+- `FavoritesRateLimiter` — 60 req/min/user write cap, reuses the sliding-window helper from 4.2.
+
+**Mobile:**
+
+- `favoritesRepository` — typed wrapper for the 5 new endpoints.
+- Hooks: `useFavorites` (`useInfiniteQuery`), `useIsSaved`, `useToggleSave` with optimistic
+  `onMutate` cache update + `onError` rollback + `onSettled` invalidate.
+- `SaveButton` heart toggle (filled/outline) wired into the recipe detail screen header; only
+  rendered for authenticated users.
+- `FavoritesScreen` rewritten from stub: grid of `RecipeCardCompact` with infinite scroll,
+  `FavoritesEmptyState`, `ErrorView` with retry, and a count header.
+
+**Testing:**
+
+- 16 new backend integration tests: auto-create on first GET, second-call idempotency,
+  concurrent-first-access race, legacy non-system self-heal, add-then-contains, idempotent
+  remove, paginated `/favorites/recipes` with visibility filter, unknown-recipe 404,
+  other-user-draft 404 (enumeration oracle), own-draft allowed, system-collection delete 400,
+  all reserved-name variants rejected, client `isSystem` spoof ignored, cross-user isolation,
+  rate-limit 429, unauthenticated 401.
+- 1 new mobile unit test: `favoritesRepository` endpoint + URL-encoding coverage.
+- 48/48 mobile tests passing (43 → 48); 85/85 backend tests passing (69 → 85).
+
 ### Added (Phase 4 Slice 4.2 — Full-Text Recipe Search)
 
 **Backend:**
