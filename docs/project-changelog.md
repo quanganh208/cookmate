@@ -6,9 +6,55 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added (Phase 4 Slice 4.1 — Recipe Detail + Wire Format Alignment)
+
+**Mobile:**
+
+- Extended `Recipe` type (`shared/types/recipe.ts`) to match BE `RecipeResponse` — added viewCount,
+  serving, prepTime, cuisine, status, authorId, updatedAt, nested `steps[]` and `ingredients[]`.
+  Removed mobile-only `isBookmarked` (moved to Phase 5 social scope).
+- New generic `Page<T>` type mirroring Spring Data Page wire shape (content, totalElements,
+  totalPages, size, number, first, last, numberOfElements).
+- New types: `RecipeIngredient`, `RecipeStep`, `RecipeStatus`, `RecipeDifficulty`, `Author`
+  (with `displayName` aligned to BE `UserResponse`).
+- `recipes-repository.ts` rewritten: `list`/`findByCategory`/`findFeatured`/`findByAuthor` return
+  typed `Page<Recipe>` with `{page, size}` params; `getById(id, { view })` supports the new
+  view-count gate (defaults to `view=false` for prefetch safety).
+- New hooks: `useInfiniteRecipes`, `useFeaturedRecipes`, `useRecipesByCategory` (TanStack
+  `useInfiniteQuery` with `getNextPageParam` driven by `Page.last` + `Page.number`); `useRecipe`
+  for single-recipe detail queries.
+- Recipe detail screen rewritten: `RecipeHero`, `RecipeIngredients`, `RecipeSteps` sub-components;
+  `RecipeDetailSkeleton` loading placeholder; shared `ErrorView` with retry CTA.
+- Home screen wired to live API: pull-to-refresh, onEndReached infinite pagination, trending
+  derived from first page, category filtering via `useRecipesByCategory`.
+- `RecipeCardCompact`, `RecipeCardFeatured`, `FeaturedCarousel` updated for new `Author.displayName`
+  - optional author shape.
+
+**Backend:**
+
+- `GET /api/recipes/{id}?view=true|false` — optional query param (default `true` for backward
+  compat). When `view=false`, the server skips `incrementViewCount` (prevents double-counting on
+  prefetch/batch paths).
+
+**Removed:**
+
+- `apps/mobile/shared/constants/mock-recipes.ts` (15-entry mock dataset) + re-export in
+  `shared/constants/index.ts`. All mock fallbacks in hooks and screens removed.
+
+**Testing:**
+
+- New mobile unit tests: `recipes-repository.test.ts` (7 cases: pagination defaults, view gate
+  default false, view=true opt-in, URL encoding for category + authorId, size defaults),
+  `use-recipes.test.ts` (3 cases: `flattenRecipePages`).
+- New backend unit test: `RecipeControllerViewGateTest` (2 cases: default view=true increments,
+  view=false skips).
+- 28/28 mobile tests passing (up from 18); 63/63 backend tests passing (up from 61).
+
 ### Planned
 
-- Phase 4: Recipe CRUD and search features
+- Phase 4.2: Search endpoint + screen (Mongo `$text` + ingredient autocomplete)
+- Phase 4.3: Create Recipe + R2 upload + orphan janitor
+- Phase 4.4: Favorites (Collection-based)
 - Phase 5: Social features (followers, ratings, comments)
 - Phase 6: AI-powered recipe suggestions
 

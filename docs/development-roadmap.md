@@ -1,20 +1,20 @@
 # Cookmate Development Roadmap
 
 **Status:** Living document. Updated as phases progress.
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-20
 
 ## Phase Overview
 
-| Phase     | Description                                                                | Status   | Target     | Dependencies |
-| --------- | -------------------------------------------------------------------------- | -------- | ---------- | ------------ |
-| Phase 1   | Foundation (monorepo, mobile skeleton, backend skeleton, Docker)           | Complete | 2026-03-06 | —            |
-| Phase 2   | Home Screen UI (5-tab nav, home layout, components)                        | Complete | 2026-03-20 | Phase 1      |
-| Phase 2.5 | Mobile Restructure (feature-based architecture, state management, offline) | Complete | 2026-03-21 | Phase 2      |
-| Phase 3   | Authentication (user registration, JWT, profile)                           | Complete | 2026-03-24 | Phase 2.5    |
-| Phase 3.5 | Mobile Authentication UI + Backend Password Reset                          | Complete | 2026-04-07 | Phase 3      |
-| Phase 4   | Recipes (CRUD, ingredients, steps, images, search)                         | Planned  | 2026-06-30 | Phase 3.5    |
-| Phase 5   | Social (follow, like, bookmark, comments, ratings)                         | Planned  | 2026-08-31 | Phase 4      |
-| Phase 6   | AI Features (suggestions, nutrition, meal planning)                        | Planned  | 2026-10-31 | Phase 4, 5   |
+| Phase     | Description                                                                | Status      | Target     | Dependencies |
+| --------- | -------------------------------------------------------------------------- | ----------- | ---------- | ------------ |
+| Phase 1   | Foundation (monorepo, mobile skeleton, backend skeleton, Docker)           | Complete    | 2026-03-06 | —            |
+| Phase 2   | Home Screen UI (5-tab nav, home layout, components)                        | Complete    | 2026-03-20 | Phase 1      |
+| Phase 2.5 | Mobile Restructure (feature-based architecture, state management, offline) | Complete    | 2026-03-21 | Phase 2      |
+| Phase 3   | Authentication (user registration, JWT, profile)                           | Complete    | 2026-03-24 | Phase 2.5    |
+| Phase 3.5 | Mobile Authentication UI + Backend Password Reset                          | Complete    | 2026-04-07 | Phase 3      |
+| Phase 4   | Recipes (CRUD, ingredients, steps, images, search)                         | In Progress | 2026-06-30 | Phase 3.5    |
+| Phase 5   | Social (follow, like, bookmark, comments, ratings)                         | Planned     | 2026-08-31 | Phase 4      |
+| Phase 6   | AI Features (suggestions, nutrition, meal planning)                        | Planned     | 2026-10-31 | Phase 4, 5   |
 
 ## Phase Details
 
@@ -98,14 +98,31 @@
 - Error mapper: backend error codes → English user messages
 - 18/18 mobile tests passing; 61/61 backend tests passing
 
-### Phase 4: Recipes
+### Phase 4: Recipes (In Progress)
 
-- Recipe CRUD operations (create, read, update, delete)
-- Ingredient list management with quantities
-- Step-by-step recipe instructions
-- Image upload to cloud storage (TODO: select provider)
-- Full-text search by recipe name
-- Filter by cuisine, difficulty, prep time
+4 vertical slices wiring the mobile app to live BE recipe endpoints, adding missing BE endpoints
+(`/api/recipes/search`, `/api/uploads/image`, favorites helpers), and deleting all mobile mock data.
+
+**Slice 4.1 — Recipe Detail + wire format (Complete):**
+
+- Mobile `Recipe` type extended to match BE `RecipeResponse` (20 fields incl. viewCount, serving,
+  prepTime, cuisine, status, authorId, updatedAt, steps[], ingredients[], nested author)
+- `Page<T>` generic added to mobile shared types mirroring Spring Data Page
+- `recipes-repository.ts` rewritten: `list`/`findByCategory`/`findFeatured`/`findByAuthor` return
+  `Page<Recipe>`; `getById(id, { view })` supports the new `?view` gate
+- Hooks: `useInfiniteRecipes`, `useFeaturedRecipes`, `useRecipesByCategory` (TanStack
+  `useInfiniteQuery` with `getNextPageParam` driven by `.last`/`.number`); `useRecipe` for detail
+- Recipe detail screen rewritten: `RecipeHero` + `RecipeIngredients` + `RecipeSteps` sub-components,
+  `RecipeDetailSkeleton` loading state, shared `ErrorView` with retry
+- Home screen wired to live API with pull-to-refresh + onEndReached pagination + empty/error states
+- Backend: `GET /api/recipes/{id}` adds `?view` query param (default `true` for backward compat);
+  `view=false` skips `incrementViewCount`
+- All mock data deleted: `shared/constants/mock-recipes.ts` + re-export removed
+- 28/28 mobile tests passing (18 existing + 10 new); 63/63 backend tests passing (61 existing + 2 new)
+- Branch: `feat/phase-4-1-recipe-detail`
+
+**Slices 4.2–4.4 (Planned):** Search endpoint + screen · Create Recipe + R2 upload + janitor ·
+Favorites (Collection-based).
 
 ### Phase 5: Social
 
