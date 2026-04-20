@@ -11,7 +11,7 @@
 ## Overview
 
 - **Priority**: P1
-- **Status**: pending (blocked by Slice 1)
+- **Status**: complete (2026-04-20)
 - **Estimate**: 3–4 days
 - **Description**: Reuse existing `Collection` model for favorites via auto-created system Collection named "Favorites" per user. Add BE helper endpoints (`/api/collections/favorites/*`). Ship mobile Favorites screen (grid, infinite scroll) + save-button on detail with optimistic toggle.
 
@@ -29,34 +29,34 @@
 
 **BE**
 
-- [ ] `Collection.java` add `isSystem: boolean` field (default false) + `@CompoundIndex(authorId+name, unique=true)`
-- [ ] `CollectionService.getOrCreateFavorites(userId)` — atomic `findAndModify` upsert with `$setOnInsert`
-- [ ] Block user from creating collection named "Favorites" (Unicode NFKC + strip control/zero-width + locale-root lowercase + multilingual reserved set)
-- [ ] Delete guard: `isSystem=true` collections cannot be deleted (400)
-- [ ] DTO guard: `CollectionRequest` never exposes `isSystem` to client (server-set only)
-- [ ] Legacy self-heal: existing "Favorites" with `isSystem=false` upgraded on read
-- [ ] Endpoints (all JWT required):
+- [x] `Collection.java` add `isSystem: boolean` field (default false) + `@CompoundIndex(authorId+name, unique=true)`
+- [x] `CollectionService.getOrCreateFavorites(userId)` — atomic `findAndModify` upsert with `$setOnInsert`
+- [x] Block user from creating collection named "Favorites" (Unicode NFKC + strip control/zero-width + locale-root lowercase + multilingual reserved set)
+- [x] Delete guard: `isSystem=true` collections cannot be deleted (400)
+- [x] DTO guard: `CollectionRequest` never exposes `isSystem` to client (server-set only)
+- [x] Legacy self-heal: existing "Favorites" with `isSystem=false` upgraded on read
+- [x] Endpoints (all JWT required):
   - `GET /api/collections/favorites` → Collection metadata (auto-create if missing)
   - **`GET /api/collections/favorites/recipes?page=&size=`** → `Page<RecipeResponse>` (replaces N+1; no view-count side-effect)
   - `POST /api/collections/favorites/recipes` body `{recipeId}` → Collection (idempotent; rate-limited 60/min)
   - `DELETE /api/collections/favorites/recipes/{recipeId}` → 204 (idempotent; rate-limited 60/min)
   - `GET /api/collections/favorites/contains/{recipeId}` → `{saved: boolean}`
-- [ ] Recipe visibility check on add-recipe (PUBLISHED-or-own-draft); uniform 404 to prevent enumeration oracle
-- [ ] Author ownership enforced — user only mutates own favorites
+- [x] Recipe visibility check on add-recipe (PUBLISHED-or-own-draft); uniform 404 to prevent enumeration oracle
+- [x] Author ownership enforced — user only mutates own favorites
 
 **Mobile**
 
-- [ ] `FavoritesScreen`: grid of `RecipeCardCompact`, infinite scroll, empty state ("No saved recipes yet"), loading skeleton
-- [ ] `SaveButton` on `RecipeDetailScreen`: heart icon, toggles save/unsave
-- [ ] Optimistic toggle via React Query `onMutate` + `onError` rollback
-- [ ] `FavoritesScreen` query invalidated on save/unsave
+- [x] `FavoritesScreen`: grid of `RecipeCardCompact`, infinite scroll, empty state ("No saved recipes yet"), loading skeleton
+- [x] `SaveButton` on `RecipeDetailScreen`: heart icon, toggles save/unsave
+- [x] Optimistic toggle via React Query `onMutate` + `onError` rollback
+- [x] `FavoritesScreen` query invalidated on save/unsave
 
 ### Non-Functional
 
-- [ ] Save button feels instant (optimistic <50ms visual update)
-- [ ] No N+1 fetch on favorites screen — single BE call returns Collection with populated recipes
-- [ ] Save/unsave idempotent (repeated calls OK)
-- [ ] No regression: BE 61 + new ≥5 tests pass; mobile 18 + new ≥4 pass
+- [x] Save button feels instant (optimistic <50ms visual update)
+- [x] No N+1 fetch on favorites screen — single BE call returns Collection with populated recipes
+- [x] Save/unsave idempotent (repeated calls OK)
+- [x] No regression: BE 61 + new ≥5 tests pass; mobile 18 + new ≥4 pass
 
 ## Architecture
 
@@ -250,57 +250,57 @@ Favorites list (single-roundtrip, no N+1):
 
 ### BE
 
-- [ ] Add `isSystem` + `@CompoundIndex(authorId+name, unique=true)` to `Collection`
-- [ ] Pre-deploy duplicate-check aggregation + document manual dedup procedure
-- [ ] `CollectionService.getOrCreateFavorites` via atomic `findAndModify` upsert
-- [ ] Legacy self-heal (`isSystem != true` → set true on read)
-- [ ] Delete guard for `isSystem=true` collections
-- [ ] `CollectionRequest` DTO omits `isSystem` (server-set only)
-- [ ] Unicode-aware reserved name check (NFKC + \p{C} strip + Locale.ROOT + multilingual set)
-- [ ] Verify `addRecipe` idempotency
-- [ ] 5 favorites endpoints in controller (incl. paginated `/favorites/recipes`)
-- [ ] Recipe visibility check on addRecipe (PUBLISHED-or-own-draft) + uniform 404
-- [ ] View-count side-effect NOT triggered by `/favorites/recipes` batch path
-- [ ] Rate limit 60 req/min on favorites write endpoints (Bucket4j)
-- [ ] `ContainsResponse` DTO
-- [ ] `FavoritesIntegrationTest` (≥15 cases per Step 11)
+- [x] Add `isSystem` + `@CompoundIndex(authorId+name, unique=true)` to `Collection`
+- [x] Pre-deploy duplicate-check aggregation + document manual dedup procedure
+- [x] `CollectionService.getOrCreateFavorites` via atomic `findAndModify` upsert
+- [x] Legacy self-heal (`isSystem != true` → set true on read)
+- [x] Delete guard for `isSystem=true` collections
+- [x] `CollectionRequest` DTO omits `isSystem` (server-set only)
+- [x] Unicode-aware reserved name check (NFKC + \p{C} strip + Locale.ROOT + multilingual set)
+- [x] Verify `addRecipe` idempotency
+- [x] 5 favorites endpoints in controller (incl. paginated `/favorites/recipes`)
+- [x] Recipe visibility check on addRecipe (PUBLISHED-or-own-draft) + uniform 404
+- [x] View-count side-effect NOT triggered by `/favorites/recipes` batch path
+- [x] Rate limit 60 req/min on favorites write endpoints (Bucket4j)
+- [x] `ContainsResponse` DTO
+- [x] `FavoritesIntegrationTest` (≥15 cases per Step 11)
 
 ### Mobile
 
-- [ ] `favorites-repository.ts` (incl. paginated `getFavoritesRecipes`) + test
-- [ ] `use-favorites.ts` with `useInfiniteQuery` (no N+1 hydrate)
-- [ ] `use-is-saved.ts`
-- [ ] `use-toggle-save.ts` + test (optimistic + rollback)
-- [ ] `FavoritesEmptyState` component
-- [ ] Rewrite `favorites-screen.tsx` (infinite scroll)
-- [ ] `SaveButton` component + test
-- [ ] Wire `SaveButton` into detail screen
-- [ ] `favorites-screen.test.tsx` smoke (incl. paginated load)
+- [x] `favorites-repository.ts` (incl. paginated `getFavoritesRecipes`) + test
+- [x] `use-favorites.ts` with `useInfiniteQuery` (no N+1 hydrate)
+- [x] `use-is-saved.ts`
+- [x] `use-toggle-save.ts` + test (optimistic + rollback)
+- [x] `FavoritesEmptyState` component
+- [x] Rewrite `favorites-screen.tsx` (infinite scroll)
+- [x] `SaveButton` component + test
+- [x] Wire `SaveButton` into detail screen
+- [x] `favorites-screen.test.tsx` smoke (incl. paginated load)
 
 ### Close-out
 
-- [ ] Lint + all tests green
-- [ ] `docs/project-changelog.md` Slice 4 entry
-- [ ] `docs/development-roadmap.md` Phase 4 → Complete
-- [ ] Commit: `feat(favorites): collection-based favorites BE + mobile screen`
+- [x] Lint + all tests green
+- [x] `docs/project-changelog.md` Slice 4 entry
+- [x] `docs/development-roadmap.md` Phase 4 → Complete
+- [x] Commit: `feat(favorites): collection-based favorites BE + mobile screen`
 
 ## Success Criteria
 
-- [ ] Tap heart on detail → icon fills instantly (optimistic)
-- [ ] Kill app, reopen detail → heart state persisted via BE
-- [ ] Favorites screen shows saved recipes (paginated, infinite scroll, single BE call — no N+1)
-- [ ] Unsave → recipe vanishes from Favorites; heart empty on detail
-- [ ] Network error on save → icon reverts + error toast
-- [ ] First-time user visits Favorites tab → empty state + auto-created Collection in BE
-- [ ] User cannot create own collection named "Favorites" — including "FAVORITES", " Favourites ", "Fav\u200Borites", "yêu thích" (all 400)
-- [ ] User cannot delete their system Favorites collection (400)
-- [ ] Client cannot flag arbitrary collection as `isSystem=true` via API
-- [ ] Concurrent first-access does NOT create duplicate Favorites collection
-- [ ] Adding another user's DRAFT recipe to favorites → 404 (same message as missing recipe — no enumeration)
-- [ ] User A cannot access User B favorites (403/404)
-- [ ] Recipe view-count NOT incremented when favorites list fetched
-- [ ] 61st save request within 60s → 429
-- [ ] All BE + mobile tests pass; no regression
+- [x] Tap heart on detail → icon fills instantly (optimistic)
+- [x] Kill app, reopen detail → heart state persisted via BE
+- [x] Favorites screen shows saved recipes (paginated, infinite scroll, single BE call — no N+1)
+- [x] Unsave → recipe vanishes from Favorites; heart empty on detail
+- [x] Network error on save → icon reverts + error toast
+- [x] First-time user visits Favorites tab → empty state + auto-created Collection in BE
+- [x] User cannot create own collection named "Favorites" — including "FAVORITES", " Favourites ", "Fav\u200Borites", "yêu thích" (all 400)
+- [x] User cannot delete their system Favorites collection (400)
+- [x] Client cannot flag arbitrary collection as `isSystem=true` via API
+- [x] Concurrent first-access does NOT create duplicate Favorites collection
+- [x] Adding another user's DRAFT recipe to favorites → 404 (same message as missing recipe — no enumeration)
+- [x] User A cannot access User B favorites (403/404)
+- [x] Recipe view-count NOT incremented when favorites list fetched
+- [x] 61st save request within 60s → 429
+- [x] All BE + mobile tests pass; no regression
 
 ## Risk Assessment
 

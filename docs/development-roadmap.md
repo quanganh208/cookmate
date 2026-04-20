@@ -121,6 +121,35 @@
 - 28/28 mobile tests passing (18 existing + 10 new); 63/63 backend tests passing (61 existing + 2 new)
 - Branch: `feat/phase-4-1-recipe-detail`
 
+**Slice 4.4 — Favorites (Complete):**
+
+- BE: Collection model gains `isSystem` flag + compound unique index `(authorId, name)` to prevent
+  race-created duplicates
+- `CollectionService.getOrCreateFavorites` uses atomic `findAndModify` upsert with `$setOnInsert`;
+  legacy non-system "Favorites" rows self-heal to `isSystem=true` on read
+- Unicode-aware reserved-name guard (NFKC + `\p{C}` strip + `Locale.ROOT` lowercase) rejects
+  "Favorites"/"FAVORITES"/" Favourites "/"Fav\u200Borites"/"yêu thích"
+- Delete guard on `isSystem=true` collections (400); `CollectionRequest` DTO omits `isSystem`
+- 5 new endpoints (all JWT-gated via SecurityConfig): `GET /favorites`, `GET /favorites/recipes`
+  (paginated, visibility-filtered, view-count-safe), `POST /favorites/recipes`,
+  `DELETE /favorites/recipes/{id}`, `GET /favorites/contains/{id}`
+- `RecipeRepositoryCustom.findAllByIdInForFavorites` — single batch Mongo query filtered to
+  PUBLISHED + viewer's own drafts (same enumeration-oracle rule as the add endpoint)
+- `FavoritesRateLimiter` (60 req/min/user) via the shared sliding-window helper from Slice 4.2
+- Mobile: `favoritesRepository`, `useFavorites` (infinite scroll), `useIsSaved`, `useToggleSave`
+  (optimistic `onMutate` + `onError` rollback + `onSettled` invalidate)
+- `SaveButton` heart toggle wired onto the detail screen header (only when authenticated)
+- `FavoritesScreen` rewritten: grid + empty state + error retry + pagination
+- 16 new BE integration tests (auto-create, idempotency, delete guard, all reserved-name variants,
+  DTO spoof, concurrent-race, enumeration oracle, cross-user isolation, 429 rate limit)
+- 48/48 mobile tests passing (43 → 48); 85/85 backend tests passing (69 → 85)
+- Branch: `feat/phase-4-4-favorites`
+
+**Slice 4.3 — Create Recipe + R2 Upload (Deferred):**
+
+Blocked on manual Cloudflare R2 prerequisites (bucket provisioning, API token, public domain,
+GHA secrets). All other Phase 4 slices ship without waiting.
+
 **Slice 4.2 — Search (Complete):**
 
 - BE: `GET /api/recipes/search?q=&page=&size=` returns `Page<RecipeResponse>` sorted by text score
@@ -141,7 +170,7 @@
 - 43/43 mobile tests (31 previous + 12 new), 69/69 backend tests (63 previous + 6 new)
 - Branch: `feat/phase-4-2-search`
 
-**Slices 4.3–4.4 (Planned):** Create Recipe + R2 upload + janitor · Favorites (Collection-based).
+_(See Slice 4.3 / 4.4 sections above for final status.)_
 
 ### Phase 5: Social
 
