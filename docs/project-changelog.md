@@ -6,6 +6,63 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added (Phase 4 Slice 4.3b — Mobile Create-Recipe Form)
+
+**Mobile:**
+
+- New feature tree: `features/create-recipe/{api,components,hooks,schemas,utils}`.
+- `recipes-mutation-repository.ts` — `POST /api/recipes` wrapper typed against `CreateRecipeFormValues`.
+- `upload-repository.ts` — multipart upload via raw `fetch` (API key + Bearer + `X-Upload-Id`
+  header, envelope-aware). Sits alongside the regular `apiClient` because multipart needs
+  different body handling.
+- `ingredients-repository.ts` — client-side catalog fetch (`GET /api/ingredients`).
+- `utils/resize-image.ts` — EXIF-orientation-safe pipeline: reads `exif.Orientation`, applies
+  explicit rotation FIRST, then resizes to `MAX_WIDTH=1280` at JPEG quality `0.8`. Fixes
+  sideways-portrait uploads from iPhones (red-team finding #10 / plan decision D9).
+  `orientationToDegrees()` helper extracted for unit testing.
+- `use-upload-image.ts` — picker → resize → upload state machine (`idle → picking → resizing →
+uploading → done | error`), reuses the same generated `X-Upload-Id` across retries so the
+  BE's idempotency layer kicks in. Camera + library pick entry points with permission prompts.
+- `use-ingredients-search.ts` — debounced (150ms) in-memory filter over the full catalog (~130
+  items; fetched once with 1-hour `staleTime`). Diacritic-insensitive via Unicode NFKD.
+- `use-create-recipe.ts` — `useMutation` wrapper; invalidates `['recipes','list'|'featured'|'category']`
+  on success so the new recipe appears in the home feed immediately.
+- `schemas/create-recipe-schema.ts` — Zod schema mirroring BE validators (title 3–200, description
+  ≤500, difficulty enum, required image/steps/ingredients). Used as client-side guardrail before
+  hitting the network.
+- Components: `RecipeImagePicker` (empty state + preview + replace + inline progress /
+  error), `DifficultyPicker` (EASY/MEDIUM/HARD segmented control), `StepInput` (dynamic numbered
+  list, add/remove), `IngredientInput` (name autocomplete + amount + unit + per-row remove).
+- `CreateRecipeScreen` rewritten from stub: scroll + keyboard-avoid layout, guarded by
+  `AuthGate`, Save-Draft + Publish buttons both wired to the schema + mutation flow,
+  navigates to `/recipe/{id}` on success. Field-level errors surface through a single
+  first-error banner.
+
+**App config:**
+
+- `app.config.js` — added `expo-image-picker` plugin with `photosPermission` +
+  `cameraPermission` copy, plus iOS `NSPhotoLibraryUsageDescription` +
+  `NSCameraUsageDescription` info-plist entries.
+
+**Dependencies:**
+
+- `expo-image-picker` `^55.0.18`, `expo-image-manipulator` `^55.0.15`.
+
+**Testing:**
+
+- `create-recipe-schema.test.ts` (7 cases: canonical payload, title length, empty steps, empty
+  ingredients, invalid difficulty enum, required imageUrl, optional fields omitted).
+- `resize-image.test.ts` (5 cases covering all 8 EXIF Orientation values + undefined + unknown —
+  the pure helper the native resize pipeline depends on).
+- 60/60 mobile tests passing (48 → 60).
+
+**Not tested in unit (covered by manual smoke + real-device checks):**
+
+- `expo-image-picker` permission prompts (OS-owned flow).
+- `expo-image-manipulator` pixel output (native module; skip per red-team finding #10 notes).
+- `use-upload-image` React lifecycle — `react-test-renderer` version pin mismatch with
+  `jest-expo` (same blocker as Slice 4.2 hook tests). Pure helpers cover the logic that matters.
+
 ### Added (Phase 4 Slice 4.3a — R2 Image Upload Backend)
 
 **Backend:**
