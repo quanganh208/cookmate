@@ -4,11 +4,16 @@ import com.cookmate.auth.model.User;
 import com.cookmate.recipe.dto.CreateRecipeRequest;
 import com.cookmate.recipe.dto.RecipeResponse;
 import com.cookmate.recipe.dto.UpdateRecipeRequest;
+import com.cookmate.recipe.service.RecipeSearchRateLimiter;
 import com.cookmate.recipe.service.RecipeService;
 import com.cookmate.shared.dto.ApiResponse;
+import com.cookmate.shared.exception.RateLimitedException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,15 +21,18 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/recipes")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Recipes")
 public class RecipeController {
 
     private final RecipeService recipeService;
+    private final RecipeSearchRateLimiter searchRateLimiter;
 
     @PostMapping
     @Operation(summary = "Create a new recipe")
@@ -71,6 +79,28 @@ public class RecipeController {
     public ResponseEntity<ApiResponse<Page<RecipeResponse>>> findFeatured(
             @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.ok(recipeService.findFeatured(pageable)));
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Full-text search over title and description")
+    public ResponseEntity<ApiResponse<Page<RecipeResponse>>> search(
+            @RequestParam("q") @NotBlank @Size(min = 1, max = 200) String query,
+            @PageableDefault(size = 20) Pageable pageable,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest request) {
+        String rateKey = user != null ? "u:" + user.getId() : "ip:" + clientIp(request);
+        if (!searchRateLimiter.tryAcquire(rateKey)) {
+            throw new RateLimitedException("Too many search requests — please slow down");
+        }
+        return ResponseEntity.ok(ApiResponse.ok(recipeService.searchByText(query, pageable)));
+    }
+
+    private static String clientIp(HttpServletRequest request) {
+        String fwd = request.getHeader("X-Forwarded-For");
+        if (fwd != null && !fwd.isBlank()) {
+            return fwd.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 
     @PutMapping("/{id}")

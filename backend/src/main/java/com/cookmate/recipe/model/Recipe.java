@@ -23,7 +23,11 @@ public class Recipe {
 
     @Id private String id;
 
-    @TextIndexed private String title;
+    // Text index language is set to "none" (whitespace split, no stemming) by
+    // MongoIndexMigration at startup — supports Vietnamese + mixed-locale titles
+    // better than the default "english" analyzer.
+    @TextIndexed(weight = 2F)
+    private String title;
 
     @TextIndexed private String description;
 

@@ -44,6 +44,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ApiResponse.error("BAD_REQUEST", message));
     }
 
+    @ExceptionHandler({
+        IllegalArgumentException.class,
+        jakarta.validation.ConstraintViolationException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception ex) {
+        return ResponseEntity.badRequest().body(ApiResponse.error("BAD_REQUEST", ex.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimitedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRateLimited(RateLimitedException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error("RATE_LIMITED", ex.getMessage()));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)

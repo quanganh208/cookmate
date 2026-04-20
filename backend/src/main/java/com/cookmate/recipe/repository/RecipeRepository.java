@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RecipeRepository extends MongoRepository<Recipe, String> {
+public interface RecipeRepository extends MongoRepository<Recipe, String>, RecipeRepositoryCustom {
 
     Page<Recipe> findByAuthorId(String authorId, Pageable pageable);
 

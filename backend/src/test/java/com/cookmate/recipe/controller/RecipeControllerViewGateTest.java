@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.cookmate.recipe.dto.RecipeResponse;
+import com.cookmate.recipe.service.RecipeSearchRateLimiter;
 import com.cookmate.recipe.service.RecipeService;
 import com.cookmate.shared.dto.ApiResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,12 +20,14 @@ import org.springframework.http.ResponseEntity;
 class RecipeControllerViewGateTest {
 
     private RecipeService recipeService;
+    private RecipeSearchRateLimiter searchRateLimiter;
     private RecipeController controller;
 
     @BeforeEach
     void setUp() {
         recipeService = mock(RecipeService.class);
-        controller = new RecipeController(recipeService);
+        searchRateLimiter = mock(RecipeSearchRateLimiter.class);
+        controller = new RecipeController(recipeService, searchRateLimiter);
         RecipeResponse stub = RecipeResponse.builder().id("r1").title("Test").build();
         when(recipeService.findByIdWithAuthor(anyString())).thenReturn(stub);
     }
