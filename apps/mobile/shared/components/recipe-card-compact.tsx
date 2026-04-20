@@ -30,7 +30,7 @@ export function RecipeCardCompact({ recipe, onPress }: RecipeCardCompactProps) {
           {recipe.title}
         </Text>
         <Text style={[Typography.caption, { color: Colors.textSecondary }]} numberOfLines={1}>
-          {recipe.author.name} · {recipe.cookTime} min
+          {recipe.author?.displayName ?? 'Unknown'} · {recipe.cookTime} min
         </Text>
         <View style={styles.likeRow}>
           <FontAwesome6 name="heart" size={10} color={Colors.primary} />

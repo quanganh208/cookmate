@@ -67,7 +67,7 @@ export function FeaturedCarousel({ recipes, onRecipePress }: FeaturedCarouselPro
                 {item.title}
               </Text>
               <Text style={[Typography.caption, { color: 'rgba(255,255,255,0.85)' }]}>
-                {item.author.name} · {item.cookTime} min
+                {item.author?.displayName ?? 'Unknown'} · {item.cookTime} min
               </Text>
             </LinearGradient>
           </Pressable>

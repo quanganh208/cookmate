@@ -28,9 +28,11 @@ export function RecipeCardFeatured({ recipe, onPress }: RecipeCardFeaturedProps)
         </Text>
         <View style={styles.metaRow}>
           <View style={styles.authorRow}>
-            <Image source={recipe.author.avatarUrl} style={styles.avatar} transition={200} />
+            {recipe.author?.avatarUrl ? (
+              <Image source={recipe.author.avatarUrl} style={styles.avatar} transition={200} />
+            ) : null}
             <Text style={[Typography.meta, { color: Colors.textSecondary }]}>
-              {recipe.author.name}
+              {recipe.author?.displayName ?? 'Unknown'}
             </Text>
           </View>
           <View style={styles.statsRow}>
