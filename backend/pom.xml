@@ -87,6 +87,20 @@
             <version>2.9.0</version>
         </dependency>
 
+        <!-- Cloudflare R2 image storage (S3-compatible) -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.29.52</version>
+        </dependency>
+
+        <!-- Content-based MIME detection for upload validation -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
