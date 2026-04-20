@@ -46,6 +46,12 @@ module.exports = ({ config }) => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.cookmate.app',
+    infoPlist: {
+      NSPhotoLibraryUsageDescription:
+        'Cookmate needs access to your photo library so you can pick a picture of your dish when creating a recipe.',
+      NSCameraUsageDescription:
+        'Cookmate needs access to your camera so you can take a picture of your dish when creating a recipe.',
+    },
   },
   android: {
     adaptiveIcon: {
@@ -64,6 +70,15 @@ module.exports = ({ config }) => ({
   plugins: [
     'expo-router',
     'expo-secure-store',
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Cookmate needs access to your photo library so you can pick a picture of your dish when creating a recipe.',
+        cameraPermission:
+          'Cookmate needs access to your camera so you can take a picture of your dish when creating a recipe.',
+      },
+    ],
     [
       '@react-native-google-signin/google-signin',
       {
