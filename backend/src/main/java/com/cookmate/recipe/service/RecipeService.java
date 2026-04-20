@@ -7,6 +7,10 @@ import com.cookmate.recipe.dto.UpdateRecipeRequest;
 import com.cookmate.recipe.model.Recipe;
 import com.cookmate.recipe.repository.RecipeRepository;
 import com.cookmate.shared.exception.ResourceNotFoundException;
+import com.cookmate.upload.R2Service;
+import com.cookmate.upload.model.PendingUpload;
+import com.cookmate.upload.repository.PendingUploadRepository;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,29 +22,53 @@ public class RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
+    private final R2Service r2Service;
+    private final PendingUploadRepository pendingUploadRepository;
 
     public RecipeResponse create(CreateRecipeRequest request, String authorId) {
+        // Image URL must belong to our R2 bucket AND be owned by this author.
+        String imageUrl = request.getImageUrl();
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            assertImageUrlIsOurs(imageUrl);
+            assertPendingUploadOwnedBy(imageUrl, authorId);
+        }
+
         Recipe recipe =
                 Recipe.builder()
                         .title(request.getTitle())
                         .description(request.getDescription())
-                        .imageUrl(request.getImageUrl())
+                        .imageUrl(imageUrl)
                         .serving(request.getServing())
                         .prepTime(request.getPrepTime())
                         .cookTime(request.getCookTime())
-                        .difficulty(request.getDifficulty())
+                        .difficulty(
+                                request.getDifficulty() != null
+                                        ? request.getDifficulty().toUpperCase(Locale.ROOT)
+                                        : null)
                         .cuisine(request.getCuisine())
                         .status(
                                 request.getStatus() != null
                                         ? Recipe.RecipeStatus.valueOf(
-                                                request.getStatus().toUpperCase())
+                                                request.getStatus().toUpperCase(Locale.ROOT))
                                         : Recipe.RecipeStatus.DRAFT)
                         .category(request.getCategory())
                         .authorId(authorId)
                         .steps(request.getSteps())
                         .ingredients(request.getIngredients())
                         .build();
-        return RecipeResponse.from(recipeRepository.save(recipe));
+        Recipe saved = recipeRepository.save(recipe);
+
+        // Link the pending upload so the janitor doesn't sweep it.
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            pendingUploadRepository
+                    .findByUrl(imageUrl)
+                    .ifPresent(
+                            pu -> {
+                                pu.setLinkedToRecipeId(saved.getId());
+                                pendingUploadRepository.save(pu);
+                            });
+        }
+        return RecipeResponse.from(saved);
     }
 
     public RecipeResponse findById(String id) {
@@ -102,14 +130,19 @@ public class RecipeService {
         }
         if (request.getTitle() != null) recipe.setTitle(request.getTitle());
         if (request.getDescription() != null) recipe.setDescription(request.getDescription());
-        if (request.getImageUrl() != null) recipe.setImageUrl(request.getImageUrl());
+        if (request.getImageUrl() != null) {
+            assertImageUrlIsOurs(request.getImageUrl());
+            assertPendingUploadOwnedBy(request.getImageUrl(), authorId);
+            recipe.setImageUrl(request.getImageUrl());
+        }
         if (request.getServing() != null) recipe.setServing(request.getServing());
         if (request.getPrepTime() != null) recipe.setPrepTime(request.getPrepTime());
         if (request.getCookTime() != null) recipe.setCookTime(request.getCookTime());
         if (request.getDifficulty() != null) recipe.setDifficulty(request.getDifficulty());
         if (request.getCuisine() != null) recipe.setCuisine(request.getCuisine());
         if (request.getStatus() != null)
-            recipe.setStatus(Recipe.RecipeStatus.valueOf(request.getStatus().toUpperCase()));
+            recipe.setStatus(
+                    Recipe.RecipeStatus.valueOf(request.getStatus().toUpperCase(Locale.ROOT)));
         if (request.getCategory() != null) recipe.setCategory(request.getCategory());
         if (request.getSteps() != null) recipe.setSteps(request.getSteps());
         if (request.getIngredients() != null) recipe.setIngredients(request.getIngredients());
@@ -123,6 +156,15 @@ public class RecipeService {
                         .orElseThrow(() -> new ResourceNotFoundException("Recipe", id));
         if (!recipe.getAuthorId().equals(authorId)) {
             throw new RuntimeException("Not authorized to delete this recipe");
+        }
+        // Best-effort R2 cleanup before dropping the recipe row.
+        String url = recipe.getImageUrl();
+        if (url != null) {
+            String key = r2Service.extractKey(url);
+            if (key != null) {
+                r2Service.deleteObject(key);
+                pendingUploadRepository.findByUrl(url).ifPresent(pendingUploadRepository::delete);
+            }
         }
         recipeRepository.deleteById(id);
     }
@@ -145,5 +187,26 @@ public class RecipeService {
                             recipe.setLikeCount(Math.max(0, recipe.getLikeCount() + delta));
                             recipeRepository.save(recipe);
                         });
+    }
+
+    private void assertImageUrlIsOurs(String imageUrl) {
+        String prefix = r2Service.publicUrl() + "/";
+        if (!imageUrl.startsWith(prefix)) {
+            throw new IllegalArgumentException(
+                    "imageUrl must be served by our R2 bucket (pub-*.r2.dev)");
+        }
+    }
+
+    private void assertPendingUploadOwnedBy(String imageUrl, String authorId) {
+        PendingUpload pu =
+                pendingUploadRepository
+                        .findByUrl(imageUrl)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Upload not found — please re-upload the image"));
+        if (!authorId.equals(pu.getUserId())) {
+            throw new IllegalArgumentException("Upload belongs to another user");
+        }
     }
 }
